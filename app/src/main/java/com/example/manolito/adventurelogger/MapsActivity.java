@@ -9,6 +9,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -25,22 +26,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
+    //draw a polyline path on Whistler
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        // Add a marker in Sydney and move the camera
-        LatLng ubc = new LatLng(49.261878, -123.249628);
-        mMap.addMarker(new MarkerOptions().position(ubc).title("Marker at MacLeod"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(ubc));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(50.058408, -122.957296), 15));
+
+        mMap.addPolyline(new PolylineOptions().geodesic(true)
+                        .add(new LatLng(50.058408, -122.957296))
+                        .add(new LatLng(50.058100, -122.958635))
+                        .add(new LatLng(50.058054, -122.960060))
+                        .add(new LatLng(50.058407, -122.962063))
+                        .add(new LatLng(50.058181, -122.963453))
+                        .add(new LatLng(50.058112, -122.964878))
+                        .color(-1)
+        );
+
+        mMap.addMarker(new MarkerOptions().position(new LatLng(50.058408, -122.957296)).title("Start"));
+        mMap.addMarker(new MarkerOptions().position(new LatLng(50.058112, -122.964878)).title("End"));
     }
 }
