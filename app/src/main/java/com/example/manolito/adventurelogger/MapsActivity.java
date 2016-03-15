@@ -14,6 +14,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
+    private int map;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,20 +31,38 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        map = getIntent().getIntExtra("map",0);
 
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(50.058408, -122.957296), 15));
+        if (map==0) {
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(50.058054, -122.960060), 14));
+            mMap.addPolyline(new PolylineOptions().geodesic(true)
+                            .add(new LatLng(50.058408, -122.957296))
+                            .add(new LatLng(50.058100, -122.958635))
+                            .add(new LatLng(50.058054, -122.960060))
+                            .add(new LatLng(50.058407, -122.962063))
+                            .add(new LatLng(50.058181, -122.963453))
+                            .add(new LatLng(50.058112, -122.964878))
+                            .color(-1)
+            );
 
-        mMap.addPolyline(new PolylineOptions().geodesic(true)
-                        .add(new LatLng(50.058408, -122.957296))
-                        .add(new LatLng(50.058100, -122.958635))
-                        .add(new LatLng(50.058054, -122.960060))
-                        .add(new LatLng(50.058407, -122.962063))
-                        .add(new LatLng(50.058181, -122.963453))
-                        .add(new LatLng(50.058112, -122.964878))
-                        .color(-1)
-        );
+            mMap.addMarker(new MarkerOptions().position(new LatLng(50.058408, -122.957296)).title("Start"));
+            mMap.addMarker(new MarkerOptions().position(new LatLng(50.058112, -122.964878)).title("End"));
 
-        mMap.addMarker(new MarkerOptions().position(new LatLng(50.058408, -122.957296)).title("Start"));
-        mMap.addMarker(new MarkerOptions().position(new LatLng(50.058112, -122.964878)).title("End"));
+        }
+        else {
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(49.403627, -123.198516), 14));
+            mMap.addPolyline(new PolylineOptions().geodesic(true)
+                            .add(new LatLng(49.405240, -123.195763))
+                            .add(new LatLng(49.404062, -123.197485))
+                            .add(new LatLng(49.403627, -123.198516))
+                            .add(new LatLng(49.403208, -123.200125))
+                            .add(new LatLng(49.402916, -123.201020))
+                            .add(new LatLng(49.402613, -123.201517))
+                            .color(-1)
+            );
+
+            mMap.addMarker(new MarkerOptions().position(new LatLng(49.405240, -123.195763)).title("Start"));
+            mMap.addMarker(new MarkerOptions().position(new LatLng(49.402613, -123.201517)).title("End"));
+        }
     }
 }

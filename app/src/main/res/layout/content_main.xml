@@ -16,7 +16,7 @@
 
     <Button
         android:layout_width="fill_parent"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         android:id="@+id/button"
         android:background="#1d497a"
         android:textColorHint="#ffffff"
@@ -25,5 +25,37 @@
         android:textSize="20dp"
         android:layout_weight="0.07"
         android:onClick="sendCoordinates"
-        android:hint="@string/Map" />
+        android:hint="@string/Whistler" />
+
+    <ImageView
+        android:layout_width="213dp"
+        android:layout_height="149dp"
+        android:id="@+id/imageView"
+        android:src="@drawable/whistler"
+        android:layout_weight="0"
+        android:layout_marginTop="10dp"
+        android:layout_gravity="center_horizontal" />
+
+    <Button
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/button2"
+        android:background="#1d497a"
+        android:textColorHint="#ffffff"
+        android:gravity="center_vertical|center_horizontal"
+        android:textColor="#ffffff"
+        android:textSize="20dp"
+        android:layout_weight="0.07"
+        android:onClick="sendCypress"
+        android:hint="@string/Cypress"
+        android:layout_marginTop="10dp" />
+
+    <ImageView
+        android:layout_width="339dp"
+        android:layout_height="119dp"
+        android:id="@+id/imageView2"
+        android:src="@drawable/cypress"
+        android:layout_marginTop="10dp"
+        android:layout_gravity="center_horizontal" />
+
 </LinearLayout>

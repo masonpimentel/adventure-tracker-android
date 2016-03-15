@@ -2,5 +2,6 @@
     <string name="app_name">Adventure Logger</string>
     <string name="title_activity_maps">Map</string>
     <string name="title_activity_main">Adventure Logger</string>
-    <string name="Map">Plot Coordinates</string>
+    <string name="Whistler">Plot Whistler</string>
+    <string name="Cypress">Plot Cypress</string>
 </resources>

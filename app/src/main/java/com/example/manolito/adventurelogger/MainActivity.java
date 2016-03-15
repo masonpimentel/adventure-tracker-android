@@ -10,6 +10,8 @@ import android.view.View;
 
 public class MainActivity extends AppCompatActivity {
 
+    public int map;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -21,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                Snackbar.make(view, "Connect to Adventure Tracker", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
             }
         });
@@ -29,7 +31,13 @@ public class MainActivity extends AppCompatActivity {
 
     public void sendCoordinates(View view) {
         Intent intent = new Intent(this, MapsActivity.class);
+        intent.putExtra("map",0);
         startActivity(intent);
     }
 
+    public void sendCypress(View view) {
+        Intent intent = new Intent(this, MapsActivity.class);
+        intent.putExtra("map",1);
+        startActivity(intent);
+    }
 }
