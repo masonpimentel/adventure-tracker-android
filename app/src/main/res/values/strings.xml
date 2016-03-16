@@ -4,4 +4,5 @@
     <string name="title_activity_main">Adventure Logger</string>
     <string name="Whistler">Plot Whistler</string>
     <string name="Cypress">Plot Cypress</string>
+    <string name="Return">Return</string>
 </resources>
