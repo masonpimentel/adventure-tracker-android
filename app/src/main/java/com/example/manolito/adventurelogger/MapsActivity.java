@@ -27,15 +27,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private GoogleMap mMap;
     private int map;
-    //private String path = getIntent().getStringExtra("path");
-    // temporarily get coordinate data from log0
-    /*
-    File file = new File(path + "/log0.txt");
+    private String path = new String();
+    private FileInputStream fis = null;
+    private InputStreamReader isr = null;
+    private BufferedReader br;
 
-    FileInputStream fis = null;
-    InputStreamReader isr = new InputStreamReader(fis);
-    BufferedReader br = new BufferedReader(isr);
-    */
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,13 +42,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        /*
+        path = getIntent().getStringExtra("path");
+        Log.i("ADV_FILE", ("Path = " + path));
+
+        // temporarily get coordinate data from log0
+        File file = new File(path + "/log0.txt");
+
         try {
             fis = new FileInputStream(file);
         }
         catch (FileNotFoundException e) {
             e.printStackTrace();
-        }*/
+        }
+
+        isr = new InputStreamReader(fis);
+        br = new BufferedReader(isr);
 
     }
 
@@ -63,6 +67,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         map = getIntent().getIntExtra("map",0);
 
         //int entries = numEntries();
+        //Log.i("ADV_FILE", ("Entries = " + entries));
         //int[] lats = new int[logs];
         //lats = ReadLats(file);
         //int[] longs = new int[1];
@@ -108,7 +113,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     //return the number of entries in the log
-    /*
+
     public int numEntries() {
         int test;
         int entries = 0;
@@ -125,7 +130,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         Log.i("ADV_FILE", ("Entries = " + entries));
         return entries;
-    }*/
+    }
 
     /*
     //read all the latitudes
