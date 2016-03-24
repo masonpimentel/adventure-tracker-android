@@ -3,6 +3,7 @@ package com.example.manolito.adventurelogger;
 import android.content.Intent;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -15,10 +16,26 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
     private int map;
+    //private String path = getIntent().getStringExtra("path");
+    // temporarily get coordinate data from log0
+    /*
+    File file = new File(path + "/log0.txt");
+
+    FileInputStream fis = null;
+    InputStreamReader isr = new InputStreamReader(fis);
+    BufferedReader br = new BufferedReader(isr);
+    */
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,11 +45,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-    }
 
-    public void returnToMain(View view) {
-        Intent intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
+        /*
+        try {
+            fis = new FileInputStream(file);
+        }
+        catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }*/
+
     }
 
     //draw a polyline path on Whistler
@@ -40,6 +61,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         map = getIntent().getIntExtra("map",0);
+
+        //int entries = numEntries();
+        //int[] lats = new int[logs];
+        //lats = ReadLats(file);
+        //int[] longs = new int[1];
 
         if (map==0) {
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(50.058054, -122.960060), 15));
@@ -75,4 +101,43 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             mMap.addMarker(new MarkerOptions().position(new LatLng(49.402613, -123.201517)).title("End"));
         }
     }
+
+    public void returnToMain(View view) {
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+    }
+
+    //return the number of entries in the log
+    /*
+    public int numEntries() {
+        int test;
+        int entries = 0;
+
+        try {
+            while ((test = br.read()) != 0) {
+                if (test == 'x') {
+                    Log.i("ADV_FILE", "Incrementing entries");
+                    entries++;
+                }
+            }
+        }
+        catch (IOException e) {e.printStackTrace();};
+
+        Log.i("ADV_FILE", ("Entries = " + entries));
+        return entries;
+    }*/
+
+    /*
+    //read all the latitudes
+    public static int[] ReadLats(File file) {
+
+
+
+
+        //debugging
+        int[] array = new int[1];
+        array[0] = 0;
+
+        return array;
+    } */
 }

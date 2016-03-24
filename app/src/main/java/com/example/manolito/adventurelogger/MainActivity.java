@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -17,6 +18,7 @@ import android.view.View;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -64,6 +66,8 @@ public class MainActivity extends AppCompatActivity {
 
     private BluetoothDevice pairDevice;
 
+    public static final String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/AdventureLogger";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,6 +94,16 @@ public class MainActivity extends AppCompatActivity {
             // When the “activity” is run and finishes, Android will run your onActivityResult()
             // function (see next page) where you can determine if it was successful or not
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+        }
+
+        //create AdventureLogger directory in external storage
+        File dir = new File(path);
+        Log.i("ADV_FILE", ("AdventureLogger path is " + path));
+        if (dir.mkdirs() || dir.isDirectory()) {
+            Log.i("ADV_FILE", "AdventureLogger path already exists");
+        }
+        else {
+            Log.i("ADV_FILE", "AdventureLogger path created");
         }
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -127,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
 
                     Log.i("MY_MESSAGE", theDevice);
 
-                    if (theDevice.contains("00:1B:DC")) {
+                    if (theDevice.contains("00:06:66:6C:A9:B1")) {
                         Log.i("MY_MESSAGE", "Found the DE2");
                         pairDevice = newDevice;
                     }
@@ -272,12 +286,14 @@ public class MainActivity extends AppCompatActivity {
     public void sendCoordinates(View view) {
         Intent intent = new Intent(this, MapsActivity.class);
         intent.putExtra("map",0);
+        intent.putExtra("path",path);
         startActivity(intent);
     }
 
     public void sendCypress(View view) {
         Intent intent = new Intent(this, MapsActivity.class);
         intent.putExtra("map",1);
+        intent.putExtra("path",path);
         startActivity(intent);
     }
 }
