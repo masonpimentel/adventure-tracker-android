@@ -67,29 +67,32 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        map = getIntent().getIntExtra("map",0);
-
+        map = getIntent().getIntExtra("map", 0);
         int entries = numEntries();
         double[] lats = new double[entries];
+        double[] longs = new double[entries];
+
         lats = ReadLats(entries, file);
-        //double[] longs = new double[1];
-        //longs = ReadLongs(entries, file);
+        longs = ReadLongs(entries, file);
 
         if (map==0) {
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(50.058054, -122.960060), 15));
-            mMap.addPolyline(new PolylineOptions().geodesic(true)
-                            .add(new LatLng(50.058408, -122.957296))
-                            .add(new LatLng(50.058100, -122.958635))
-                            .add(new LatLng(50.058054, -122.960060))
-                            .add(new LatLng(50.058407, -122.962063))
-                            .add(new LatLng(50.058181, -122.963453))
-                            .add(new LatLng(50.058112, -122.964878))
-                            .color(-1)
-            );
+            //focus gps location
+            //TODO: fine tune the zoom
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lats[0], -longs[0]), 15));
 
-            mMap.addMarker(new MarkerOptions().position(new LatLng(50.058408, -122.957296)).title("Start").icon(BitmapDescriptorFactory
+            //add the points to the polyline
+            PolylineOptions options = new PolylineOptions().color(-1).geodesic(true);
+
+            for (int i=0; i<entries; i++) {
+                options.add(new LatLng(lats[i],-longs[i]));
+                mMap.addPolyline(options);
+            }
+
+            //start point
+            mMap.addMarker(new MarkerOptions().position(new LatLng(lats[0], -longs[0])).title("Start").icon(BitmapDescriptorFactory
                     .defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
-            mMap.addMarker(new MarkerOptions().position(new LatLng(50.058112, -122.964878)).title("End"));
+            //end point
+            mMap.addMarker(new MarkerOptions().position(new LatLng(lats[entries - 1], -longs[entries - 1])).title("End"));
 
         }
     }
@@ -179,9 +182,51 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     //read all the longitudes
     public double[] ReadLongs(int entries, File file) {
+        int character;
         double[] array = new double[entries];
+        int k = 0;
+        String longitude = new String();
 
-        //fill array with the longitudes
+        try {
+            //reset the seek position
+            br.reset();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        //fill array with the latitudes
+        try {
+            while ((character = br.read()) >= 0) {
+                if (character == 'L') {
+                    character = br.read();
+                    if (character == 'o') {
+                        character = br.read();
+                        if (character == 'n') {
+                            //skip 8 characters
+                            br.skip(8);
+                            longitude = longitude + (char)br.read();
+                            //keep reading until the next space
+                            for(int i=0; character != 32; i++) {
+                                character = br.read();
+                                if (character == 32) {
+                                    break;
+                                }
+                                longitude = longitude + (char)character;
+                                //avoid getting stuck in an infinite loop
+                                Assert.assertTrue(i<40);
+                            }
+                            array[k] = Double.parseDouble(longitude);
+                            k++;
+                            longitude = "";
+                        }
+                    }
+                }
+            }
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
 
         return array;
     }
