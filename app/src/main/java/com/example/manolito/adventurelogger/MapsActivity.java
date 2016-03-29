@@ -16,6 +16,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import junit.framework.Assert;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -31,6 +33,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private FileInputStream fis = null;
     private InputStreamReader isr = null;
     private BufferedReader br;
+    private File file = null;
 
 
     @Override
@@ -46,7 +49,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Log.i("ADV_FILE", ("Path = " + path));
 
         // temporarily get coordinate data from log0
-        File file = new File(path + "/log0.txt");
+        file = new File(path + "/log0.txt");
 
         try {
             fis = new FileInputStream(file);
@@ -66,11 +69,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
         map = getIntent().getIntExtra("map",0);
 
-        //int entries = numEntries();
-        //Log.i("ADV_FILE", ("Entries = " + entries));
-        //int[] lats = new int[logs];
-        //lats = ReadLats(file);
-        //int[] longs = new int[1];
+        int entries = numEntries();
+        double[] lats = new double[entries];
+        lats = ReadLats(entries, file);
+        //double[] longs = new double[1];
+        //longs = ReadLongs(entries, file);
 
         if (map==0) {
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(50.058054, -122.960060), 15));
@@ -89,22 +92,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             mMap.addMarker(new MarkerOptions().position(new LatLng(50.058112, -122.964878)).title("End"));
 
         }
-        else {
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(49.403627, -123.198516), 14));
-            mMap.addPolyline(new PolylineOptions().geodesic(true)
-                            .add(new LatLng(49.405240, -123.195763))
-                            .add(new LatLng(49.404062, -123.197485))
-                            .add(new LatLng(49.403627, -123.198516))
-                            .add(new LatLng(49.403208, -123.200125))
-                            .add(new LatLng(49.402916, -123.201020))
-                            .add(new LatLng(49.402613, -123.201517))
-                            .color(-1)
-            );
-
-            mMap.addMarker(new MarkerOptions().position(new LatLng(49.405240, -123.195763)).title("Start").icon(BitmapDescriptorFactory
-                    .defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
-            mMap.addMarker(new MarkerOptions().position(new LatLng(49.402613, -123.201517)).title("End"));
-        }
     }
 
     public void returnToMain(View view) {
@@ -117,32 +104,85 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public int numEntries() {
         int test;
         int entries = 0;
+        //mark requires a "limit", set that to the maximum range of an int...
+        int markLimit = 2000000000;
 
         try {
-            while ((test = br.read()) != 0) {
+            //set the mark to the beginning of the file
+            br.mark(markLimit);
+            while ((test = br.read()) >= 0) {
                 if (test == 'x') {
                     Log.i("ADV_FILE", "Incrementing entries");
                     entries++;
                 }
             }
         }
-        catch (IOException e) {e.printStackTrace();};
+        catch (IOException e) {
+            e.printStackTrace();
+        }
 
+        entries++;
         Log.i("ADV_FILE", ("Entries = " + entries));
         return entries;
     }
 
-    /*
     //read all the latitudes
-    public static int[] ReadLats(File file) {
+    public double[] ReadLats(int entries, File file) {
+        int character;
+        double[] array = new double[entries];
+        int k = 0;
+        String latitude = new String();
 
+        try {
+            //reset the seek position
+            br.reset();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
 
-
-
-        //debugging
-        int[] array = new int[1];
-        array[0] = 0;
+        //fill array with the latitudes
+        try {
+            while ((character = br.read()) >= 0) {
+                if (character == 'L') {
+                    character = br.read();
+                    if (character == 'a') {
+                        character = br.read();
+                        if (character == 't') {
+                            //skip 7 characters
+                            br.skip(7);
+                            latitude = latitude + (char)br.read();
+                            //keep reading until the next space
+                            for(int i=0; character != 32; i++) {
+                                character = br.read();
+                                if (character == 32) {
+                                    break;
+                                }
+                                latitude = latitude + (char)character;
+                                //avoid getting stuck in an infinite loop
+                                Assert.assertTrue(i<40);
+                            }
+                            array[k] = Double.parseDouble(latitude);
+                            k++;
+                            latitude = "";
+                        }
+                    }
+                }
+            }
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
 
         return array;
-    } */
+    }
+
+    //read all the longitudes
+    public double[] ReadLongs(int entries, File file) {
+        double[] array = new double[entries];
+
+        //fill array with the longitudes
+
+        return array;
+    }
 }
