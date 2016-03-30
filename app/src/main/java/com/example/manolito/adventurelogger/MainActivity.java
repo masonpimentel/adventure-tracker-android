@@ -30,39 +30,29 @@ import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
 
-    public int map;
-    // A constant that we use to determine if our request to turn on bluetooth worked
+    //a constant used to determine if our request to turn on bluetooth worked
     private final static int REQUEST_ENABLE_BT = 1;
 
-    // A handle to the tablet’s bluetooth adapter
+    //a handle to the tablet’s bluetooth adapter
     private BluetoothAdapter mBluetoothAdapter;
 
-    // get the context for the application. We use this with things like "toast" popups
+    //get the context for the application. We use this with things like "toast" popups
     private Context context;
 
-    private BroadcastReceiver mReceiver ;	         // handle to BroadCastReceiver object
+    //handle to BroadCastReceiver object
+    private BroadcastReceiver mReceiver ;
 
-    // an Array/List to hold discovered Bluetooth devices
-    // A bluetooth device contains device Name and Mac Address information which
-    // we want to display to the user in a List View so they can chose a device
-    // to connect to. We also need that info to actually connect to the device
-    private   ArrayList <BluetoothDevice>  Discovereddevices = new ArrayList < BluetoothDevice > ( ) ;
-
-    // an Array/List to hold string details of the Bluetooth devices, name + MAC address etc.
-    // this is displayed in the listview for the user to chose
-    private ArrayList< String  > myDiscoveredDevicesStringArray = new ArrayList < String > ( ) ;
-
-    // a bluetooth “socket” to a bluetooth device
+    //a bluetooth socket to a bluetooth device
     private BluetoothSocket mmSocket = null;
 
-    // input/output “streams” with which we can read and write to device
-    // use of “static” important, it means variables can be accessed
-    // without an object, this is useful as other activities can use
-    // these streams to communicate after they have been opened.
+    //input/output streams to read and write to device
+    //use of “static” means variables can be accessed
+    //without an object, this is useful as other activities can use
+    //these streams to communicate after they have been opened
     public static InputStream mmInStream = null;
     public static OutputStream mmOutStream = null;
 
-    // indicates if we are connected to a device
+    //indicates if we are connected to a device
     private boolean Connected = false;
 
     private BluetoothDevice pairDevice;
@@ -73,30 +63,25 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         context = getApplicationContext();
-        // This call returns a handle to the one bluetooth device within your Android device
+        //returns a handle to the one bluetooth device within the Android device
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        // check to see if your android device even has a bluetooth device !!!!,
         if (mBluetoothAdapter == null) {
             Toast toast = Toast.makeText(context, "", Toast.LENGTH_LONG);
             toast.show();
             finish();
-            // if no bluetooth device on this tablet don’t go any further.
-            //return ;
         }
         if (!mBluetoothAdapter.isEnabled()) {
-            // create a new intent that will ask the bluetooth adaptor to “enable” itself.
-            // A dialog box will appear asking if you want turn on the bluetooth device
+            //create a new intent that will ask the bluetooth adaptor to “enable” itself.
             Intent enableBtIntent = new Intent ( BluetoothAdapter.ACTION_REQUEST_ENABLE );
 
-            // REQUEST_ENABLE_BT below is a constant (defined as '1 - but could be anything)
-            // When the “activity” is run and finishes, Android will run your onActivityResult()
-            // function (see next page) where you can determine if it was successful or not
+            //REQUEST_ENABLE_BT below is a constant (defined as '1 - but could be anything)
+            //when the “activity” is run and finishes, Android will run onActivityResult()
+            //function
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         }
 
@@ -122,8 +107,6 @@ public class MainActivity extends AppCompatActivity {
                 if(Connected == true)
                     closeConnection();	// user defined fn to close streams (Page23)
 
-                // get the selected bluetooth device based on list view position & connect
-                // to it see page 24 and 25
                 CreateSerialBluetoothDeviceSocket( pairDevice ) ;
                 ConnectToSerialBlueToothDevice();	// user defined fn
 
@@ -140,25 +123,22 @@ public class MainActivity extends AppCompatActivity {
                 BluetoothDevice newDevice;
 
                 if ( action.equals(BluetoothDevice.ACTION_FOUND) ) {
-                    // If notification is a “new device found”
-                    // Intent will contain discovered Bluetooth Device so go and get it
+                    //if notification is a “new device found”
                     newDevice = intent.getParcelableExtra ( BluetoothDevice.EXTRA_DEVICE );
 
-                    // Add the name and address to the custom array adapter to show in a ListView
                     String theDevice = new String( newDevice.getName() +
                             "\nMAC Address = " + newDevice.getAddress());
 
                     Log.i("MY_MESSAGE", theDevice);
 
+                    //hackery for now - just make sure some info from the DE2 is here
+                    //this way we will only connect to the DE2
                     if (theDevice.contains("00:06:66:6C:A9:B1")) {
                         Log.i("MY_MESSAGE", "Found the DE2");
                         pairDevice = newDevice;
                     }
 
                     Toast.makeText(context, theDevice, Toast.LENGTH_LONG).show();	// create popup for device
-
-                    // notify array adaptor that the contents of String Array have changed
-                    //myDiscoveredArrayAdapter.notifyDataSetChanged ();
                 }
                 // more visual feedback for user (not essential but useful)
                 else if (action.equals(BluetoothAdapter.ACTION_DISCOVERY_STARTED)) {
@@ -170,41 +150,25 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
-        // get handles to list views on the GUI
-        // ListView PairedlistView = (ListView) findViewById(R.id.listView2);
-        // ListView DiscoveredlistView = (ListView) findViewById(R.id.listView3);
-        // add some action listeners for when user clicks to connect to BT devices PairedlistView.setOnItemClickListener ( mPairedClickedHandler ); DiscoveredlistView.setOnItemClickListener ( mDiscoveredClickedHandler );
-        // set the adaptor view for the list views above which handles
-        // how the rows in each list are drawn
-        //PairedlistView.setAdapter(myPairedArrayAdapter); DiscoveredlistView.setAdapter(myDiscoveredArrayAdapter);
-
-
-        // create 3 separate IntentFilters that are tuned to listen to certain Android notifications
-        // 1) when new Bluetooth devices are discovered,
-        // 2) when discovery of devices starts (not essential but give useful feedback)
-        // 3) When discovery ends (not essential but give useful feedback)
+        //create 3 separate IntentFilters that are tuned to listen to certain Android notifications
+        //1) when new Bluetooth devices are discovered,
+        //2) when discovery of devices starts (not essential but give useful feedback)
+        //3) When discovery ends (not essential but give useful feedback)
         IntentFilter filterFound = new IntentFilter (BluetoothDevice.ACTION_FOUND);
         IntentFilter filterStart = new IntentFilter (BluetoothAdapter.ACTION_DISCOVERY_STARTED);
         IntentFilter filterStop = new IntentFilter (BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
 
-        // register our broadcast receiver using the filters defined above
-        // our broadcast receiver will have it’s “onReceive()” function called
-        // so it gets called every time a notification is broacast by Android that matches one of the
-        // 3 filters, e.g.
-        // a new bluetooth device is found or discovery starts or finishes
-        // we should unregister it again when the app ends in onDestroy() - see later
+        //register our broadcast receiver using the filters defined above
+        //broadcast receiver will have it’s “onReceive()” function called
+        //so it gets called every time a notification is broacast by Android that matches one of the
+        //3 filters, e.g.
+        //a new bluetooth device is found or discovery starts or finishes
         registerReceiver (mReceiver, filterFound);
         registerReceiver (mReceiver, filterStart);
         registerReceiver (mReceiver, filterStop);
 
-        // Before starting discovery make sure discovery is cancelled
-
         if (mBluetoothAdapter.isDiscovering())
             mBluetoothAdapter.cancelDiscovery();
-
-        // now start scanning for new devices. The broadcast receiver
-        // we wrote earlier will be called each time we discover a new device
-        // don't make this call if you only want to show paired devices
 
         mBluetoothAdapter.startDiscovery() ;
     }
@@ -232,13 +196,12 @@ public class MainActivity extends AppCompatActivity {
     {
         mmSocket = null;
 
-        // universal UUID for a serial profile RFCOMM blue tooth device
-        // this is just one of those “things” that you have to do and just works
+        //universal UUID for a serial profile RFCOMM blue tooth device
         UUID MY_UUID = UUID.fromString ("00001101-0000-1000-8000-00805F9B34FB");
 
-        // Get a Bluetooth Socket to connect with the given BluetoothDevice
+        //get a Bluetooth Socket to connect with the given BluetoothDevice
         try {
-            // MY_UUID is the app's UUID string, also used by the server code
+            //MY_UUID is the app's UUID string, also used by the server code
             mmSocket = device.createRfcommSocketToServiceRecord (MY_UUID);
         }
         catch (IOException e) {
@@ -247,11 +210,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void ConnectToSerialBlueToothDevice() {
-        // Cancel discovery because it will slow down the connection
+        //cancel discovery because it will slow down the connection
         mBluetoothAdapter.cancelDiscovery();
 
         try {
-            // Attempt connection to the device through the socket.
+            //attempt connection to the device through the socket.
             mmSocket.connect();
             Toast.makeText(context, "Connection Made", Toast.LENGTH_LONG).show();
         }
@@ -261,11 +224,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         //create the input/output stream and record fact we have made a connection
-        GetInputOutputStreamsForSocket();	// see page 26
+        GetInputOutputStreamsForSocket();
         Connected = true ;
     }
 
-    // gets the input/output stream associated with the current socket
+    //gets the input/output stream associated with the current socket
     public void GetInputOutputStreamsForSocket() {
         try {
             mmInStream = mmSocket.getInputStream();
@@ -310,7 +273,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-
 
     public void sendCoordinates(View view) {
         Intent intent = new Intent(this, MapsActivity.class);
