@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.SystemClock;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -68,8 +69,11 @@ public class MainActivity extends AppCompatActivity {
 
     public static final String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/AdventureLogger";
 
+    private String testStr = new String();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -122,6 +126,11 @@ public class MainActivity extends AppCompatActivity {
                 // to it see page 24 and 25
                 CreateSerialBluetoothDeviceSocket( pairDevice ) ;
                 ConnectToSerialBlueToothDevice();	// user defined fn
+
+                //get a string from DE2
+                testStr = ReadFromBTDevice();
+                Log.i("BLUETOOTH", testStr);
+
             }
         });
 
@@ -269,6 +278,26 @@ public class MainActivity extends AppCompatActivity {
     //    unregisterReceiver ( mReceiver );  // make sure we unregister
         // our broadcast receiver at end
     //}
+
+    // This function reads a line of text from the Bluetooth device
+    public String ReadFromBTDevice() {
+        byte c;
+        String s = new String("");
+
+        try { // Read from the InputStream using polling and timeout
+            for (int i = 0; i < (200*60); i++) {
+                // try to read for 2 seconds * 60 max
+                SystemClock.sleep(10);
+                if (mmInStream.available() > 0) {
+                    if ((c = (byte) mmInStream.read()) != '\r') // '\r' terminator
+                        s += (char) c; // build up string 1 byte by byte
+                }
+            }
+        } catch (IOException e) {
+            return new String("-- No Response --");
+        }
+        return s;
+    }
 
 
     protected void onActivityResult (int requestCode, int resultCode, Intent data) {
