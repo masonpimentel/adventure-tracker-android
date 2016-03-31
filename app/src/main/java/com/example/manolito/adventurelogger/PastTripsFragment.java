@@ -40,7 +40,7 @@ public class PastTripsFragment extends Fragment {
 
         View rootView = inflater.inflate(R.layout.fragment_past_trips, container,false);
 
-        rootView.setBackgroundResource(R.drawable.cypress);
+        //rootView.setBackgroundResource(R.drawable.cypress);
 
 
         List<String> tripsItems = new ArrayList<String>();
