@@ -6,27 +6,19 @@ import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.SystemClock;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
-import android.widget.ListView;
 import android.widget.Toast;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -65,11 +57,16 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        if(savedInstanceState == null){
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.container, new PastTripsFragment())
+                    .commit();
+        }
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         context = getApplicationContext();
         //returns a handle to the one bluetooth device within the Android device
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+ /*       mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBluetoothAdapter == null) {
             Toast toast = Toast.makeText(context, "", Toast.LENGTH_LONG);
             toast.show();
@@ -83,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
             //when the “activity” is run and finishes, Android will run onActivityResult()
             //function
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-        }
+        }*/
 
         //create AdventureLogger directory in external storage
         File dir = new File(path);
@@ -102,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
                 Snackbar.make(view, "Connecting to Adventure Tracker...", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show();
 
-                // we are going to connect to the other device as a client
+ /*               // we are going to connect to the other device as a client
                 // if we are already connected to a device, close connections
                 if(Connected == true)
                     closeConnection();	// user defined fn to close streams (Page23)
@@ -112,12 +109,12 @@ public class MainActivity extends AppCompatActivity {
 
                 //get a string from DE2
                 testStr = ReadFromBTDevice();
-                Log.i("BLUETOOTH", testStr);
+                Log.i("BLUETOOTH", testStr);*/
 
             }
         });
 
-        mReceiver = new BroadcastReceiver() {
+        /*mReceiver = new BroadcastReceiver() {
             public void onReceive (Context context, Intent intent) {
                 String action = intent.getAction();
                 BluetoothDevice newDevice;
@@ -148,33 +145,33 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(context, "Discovery Finished", Toast.LENGTH_LONG).show();
                 }
             }
-        };
+        };*/
 
-        //create 3 separate IntentFilters that are tuned to listen to certain Android notifications
+       /* //create 3 separate IntentFilters that are tuned to listen to certain Android notifications
         //1) when new Bluetooth devices are discovered,
         //2) when discovery of devices starts (not essential but give useful feedback)
         //3) When discovery ends (not essential but give useful feedback)
         IntentFilter filterFound = new IntentFilter (BluetoothDevice.ACTION_FOUND);
         IntentFilter filterStart = new IntentFilter (BluetoothAdapter.ACTION_DISCOVERY_STARTED);
-        IntentFilter filterStop = new IntentFilter (BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+        IntentFilter filterStop = new IntentFilter (BluetoothAdapter.ACTION_DISCOVERY_FINISHED);*/
 
-        //register our broadcast receiver using the filters defined above
+       /* //register our broadcast receiver using the filters defined above
         //broadcast receiver will have it’s “onReceive()” function called
         //so it gets called every time a notification is broacast by Android that matches one of the
         //3 filters, e.g.
         //a new bluetooth device is found or discovery starts or finishes
         registerReceiver (mReceiver, filterFound);
         registerReceiver (mReceiver, filterStart);
-        registerReceiver (mReceiver, filterStop);
+        registerReceiver (mReceiver, filterStop);*/
 
-        if (mBluetoothAdapter.isDiscovering())
+       /* if (mBluetoothAdapter.isDiscovering())
             mBluetoothAdapter.cancelDiscovery();
 
-        mBluetoothAdapter.startDiscovery() ;
+        mBluetoothAdapter.startDiscovery() ;*/
     }
 
     void closeConnection() {
-        try {
+      /*  try {
             mmInStream.close();
             mmInStream = null;
         } catch (IOException e) {}
@@ -189,10 +186,10 @@ public class MainActivity extends AppCompatActivity {
             mmSocket = null;
         } catch (IOException e) {}
 
-        Connected = false ;
+        Connected = false ;*/
     }
 
-    public void CreateSerialBluetoothDeviceSocket(BluetoothDevice device)
+    /*public void CreateSerialBluetoothDeviceSocket(BluetoothDevice device)
     {
         mmSocket = null;
 
@@ -260,7 +257,7 @@ public class MainActivity extends AppCompatActivity {
             return new String("-- No Response --");
         }
         return s;
-    }
+    }*/
 
 
     protected void onActivityResult (int requestCode, int resultCode, Intent data) {
@@ -274,7 +271,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void sendCoordinates(View view) {
+ /*   public void sendCoordinates(View view) {
         Intent intent = new Intent(this, MapsActivity.class);
         intent.putExtra("map",0);
         intent.putExtra("path",path);
@@ -286,5 +283,5 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("map",1);
         intent.putExtra("path",path);
         startActivity(intent);
-    }
+    }*/
 }
