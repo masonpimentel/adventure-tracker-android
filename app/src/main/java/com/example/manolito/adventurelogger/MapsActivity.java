@@ -27,7 +27,7 @@ import java.io.InputStreamReader;
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
-    private int map;
+    private String map = new String();
     private String path = new String();
     private FileInputStream fis = null;
     private InputStreamReader isr = null;
@@ -44,11 +44,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        map = getIntent().getStringExtra("map");
+
         path = getIntent().getStringExtra("path");
         Log.i("ADV_FILE", ("Path = " + path));
+        file = new File(path + "/" + map);
 
         // temporarily get coordinate data from log0
-        //file = new File(path + "/log1.txt");
+        //file = new File(path + "/log0.txt");
 
         try {
             fis = new FileInputStream(file);
@@ -68,8 +71,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        map = getIntent().getIntExtra("map", 0);
-        file = new File(path + map);
         int entries = numEntries();
         double[] lats = new double[entries];
         double[] longs = new double[entries];
