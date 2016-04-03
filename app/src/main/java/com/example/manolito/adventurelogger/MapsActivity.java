@@ -1,8 +1,8 @@
 package com.example.manolito.adventurelogger;
 
 import android.content.Intent;
-import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
 
@@ -10,7 +10,6 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -49,7 +48,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Log.i("ADV_FILE", ("Path = " + path));
 
         // temporarily get coordinate data from log0
-        file = new File(path + "/log1.txt");
+        //file = new File(path + "/log1.txt");
 
         try {
             fis = new FileInputStream(file);
@@ -70,6 +69,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         map = getIntent().getIntExtra("map", 0);
+        file = new File(path + map);
         int entries = numEntries();
         double[] lats = new double[entries];
         double[] longs = new double[entries];
@@ -77,7 +77,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         lats = ReadLats(entries, file);
         longs = ReadLongs(entries, file);
 
-        if (map==0) {
+
             //focus gps location
             //TODO: fine tune the zoom
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lats[0], -longs[0]), 15));
@@ -96,7 +96,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             //end point
             mMap.addMarker(new MarkerOptions().position(new LatLng(lats[entries - 1], -longs[entries - 1])).title("End"));
 
-        }
+
     }
 
     public void returnToMain(View view) {

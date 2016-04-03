@@ -63,7 +63,7 @@ public class PastTripsFragment extends Fragment {
                 R.layout.list_item_trips,
                 R.id.list_item_trips_textview,
                 tripsItems);
-        ListView listView = (ListView) rootView.findViewById(R.id.listview_pastTrips);
+        final ListView listView = (ListView) rootView.findViewById(R.id.listview_pastTrips);
 
         listView.setAdapter(pastTripsItemAdapter);
 
@@ -71,7 +71,7 @@ public class PastTripsFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Intent intent = new Intent(getActivity(), MapsActivity.class);
-                intent.putExtra("map",i);
+                intent.putExtra("map",listView.getItemAtPosition(i).toString());
                 intent.putExtra("path",path);
                 startActivity(intent);
             }
