@@ -69,6 +69,8 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
     private boolean found = false;
     private boolean paired = false;
 
+    private int numFiles = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -110,8 +112,27 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
             Log.i("ADV_FILE", "AdventureLogger path created");
         }
 
+        //find out how many logs there are
+
+        File directory = new File(MainActivity.path);
+
+        File[] files = directory.listFiles();
+        for (File file : files) {
+            if (!file.getName().contains("total")) {
+                numFiles++;
+            }
+        }
+
+        //new logfile
+        String logfile = new String("/log");
+        logfile = logfile + numFiles;
+        logfile = logfile + ".txt";
+
+        Log.i("ADV_FILE", logfile);
+
         //temporarily put into log1.txt
         outFile = new File(MainActivity.path + "/log1.txt");
+
 
         try
         {
@@ -138,20 +159,20 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
                     //hackery for now - just make sure some info from the DE2 is here
                     //this way we will only connect to the DE2
                     if (theDevice.contains("00:06:66:6C:A9:B1")) {
-                        Log.i("MY_MESSAGE", "Found the DE2");
+                        Toast.makeText(context, "Found Adventure Tracker!", Toast.LENGTH_LONG).show();
                         found = true;
                         pairDevice = newDevice;
                     }
 
-                    Toast.makeText(context, theDevice, Toast.LENGTH_LONG).show();	// create popup for device
+                    //Toast.makeText(context, theDevice, Toast.LENGTH_LONG).show();	// create popup for device
                 }
                 // more visual feedback for user (not essential but useful)
                 else if (action.equals(BluetoothAdapter.ACTION_DISCOVERY_STARTED)) {
                     Toast.makeText(context, "Discovery Started", Toast.LENGTH_LONG).show();
                 }
-                else if (action.equals(BluetoothAdapter.ACTION_DISCOVERY_FINISHED) ) {
-                    Toast.makeText(context, "Discovery Finished", Toast.LENGTH_LONG).show();
-                }
+                //else if (action.equals(BluetoothAdapter.ACTION_DISCOVERY_FINISHED) ) {
+                    //Toast.makeText(context, "Discovery Finished", Toast.LENGTH_LONG).show();
+                //}
 
 
             }
@@ -200,8 +221,9 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
         if(Connected == true)
           closeConnection();	// user defined fn to close streams (Page23)
 
-        CreateSerialBluetoothDeviceSocket( pairDevice ) ;
+        CreateSerialBluetoothDeviceSocket(pairDevice) ;
         ConnectToSerialBlueToothDevice();	// user defined fn
+
     }
 
     public void syncFiles(View view) {
@@ -217,7 +239,7 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
 
         //write logfile
         ReadFromBTDevice();
-        Log.i("BLUETOOTH", testStr);
+        //Log.i("ADV_FILE", testStr);
     }
 
     public void nfcPage() {
@@ -255,7 +277,7 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
                 if ((c = (byte) TitlePage.mmInStream.read()) == -1) {
                     try
                     {
-                        TitlePage.fos.close();
+                        fos.close();
                     }
                     catch (IOException e) {
                         e.printStackTrace();
@@ -266,8 +288,8 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
                 try
                 {
                     test = test + (char)c;
-                    Log.i("MY_MESSAGE", test);
-                    TitlePage.fos.write(c);
+                    Log.i("ADV_FILE", test);
+                    fos.write(c);
                 }
                 catch (IOException e) {
                     e.printStackTrace();
@@ -304,6 +326,7 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
             //attempt connection to the device through the socket.
             mmSocket.connect();
             Toast.makeText(this, "Connection Made", Toast.LENGTH_LONG).show();
+            paired = true;
         }
         catch (IOException connectException) {
             Toast.makeText(this, "Connection Failed", Toast.LENGTH_LONG).show();
