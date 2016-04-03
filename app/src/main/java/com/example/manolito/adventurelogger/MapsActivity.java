@@ -49,7 +49,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Log.i("ADV_FILE", ("Path = " + path));
 
         // temporarily get coordinate data from log0
-        file = new File(path + "/log0.txt");
+        file = new File(path + "/log1.txt");
 
         try {
             fis = new FileInputStream(file);

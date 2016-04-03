@@ -294,6 +294,9 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
         catch (IOException e) {
             Toast.makeText(this, "Socket Creation Failed", Toast.LENGTH_LONG).show();
         }
+        catch (NullPointerException e) {
+            e.printStackTrace();
+        }
     }
 
     public void ConnectToSerialBlueToothDevice() {
@@ -307,6 +310,10 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
         }
         catch (IOException connectException) {
             Toast.makeText(this, "Connection Failed", Toast.LENGTH_LONG).show();
+            return;
+        }
+        catch (NullPointerException e) {
+            e.printStackTrace();
             return;
         }
 

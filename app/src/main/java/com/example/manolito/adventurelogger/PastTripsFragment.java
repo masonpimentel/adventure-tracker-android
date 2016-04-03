@@ -13,7 +13,7 @@ import android.widget.ListView;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import java.io.File;
 
 public class PastTripsFragment extends Fragment {
     private ArrayAdapter<String> pastTripsItemAdapter;
@@ -25,36 +25,38 @@ public class PastTripsFragment extends Fragment {
         setHasOptionsMenu(true);
     }
 
+    public File[] GetFiles(String DirectoryPath) {
+        File f = new File(DirectoryPath);
+        f.mkdirs();
+        File[] file = f.listFiles();
+        return file;
+    }
+
+    public ArrayList<String> getFileNames(File[] file){
+        ArrayList<String> arrayFiles = new ArrayList<String>();
+        if (file.length == 0)
+            return null;
+        else {
+            for (int i=0; i<file.length; i++)
+                arrayFiles.add(file[i].getName());
+        }
+
+        return arrayFiles;
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-        String tripItem1= "Whistler";
-        String tripItem2= "Cypress";
-        String tripItem3= "Trip3 (Date)";
-        String tripItem4= "Trip4 (Date)";
-        String tripItem5= "Trip5 (Date)";
-        String tripItem6= "Trip6 (Date)";
-        String tripItem7= "Trip7 (Date)";
-        String tripItem8= "Trip8 (Date)";
-        String tripItem9= "Trip9 (Date)";
-        String tripItem10= "Trip10 (Date)";
+        File[] tripFiles = GetFiles(path);
+        ArrayList<String> fileNames = getFileNames(tripFiles);
+
 
         View rootView = inflater.inflate(R.layout.fragment_past_trips, container,false);
 
-        //rootView.setBackgroundResource(R.drawable.cypress);
-
-
         List<String> tripsItems = new ArrayList<String>();
 
-        tripsItems.add(tripItem1);
-        tripsItems.add(tripItem2);
-        tripsItems.add(tripItem3);
-        tripsItems.add(tripItem4);
-        tripsItems.add(tripItem5);
-        tripsItems.add(tripItem6);
-        tripsItems.add(tripItem7);
-        tripsItems.add(tripItem8);
-        tripsItems.add(tripItem9);
-        tripsItems.add(tripItem10);
+        for (int i = 0; i <fileNames.size() ; i++) {
+            tripsItems.add(fileNames.get(i));
+        }
 
         pastTripsItemAdapter = new ArrayAdapter<String>(
                 getActivity(),
@@ -75,8 +77,6 @@ public class PastTripsFragment extends Fragment {
             }
         });
 
-
         return rootView;
-
     }
 }
