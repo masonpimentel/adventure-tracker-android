@@ -66,45 +66,10 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    //@Override
-    //public void onDestroy() {
-    //    unregisterReceiver ( mReceiver );  // make sure we unregister
-        // our broadcast receiver at end
-    //}
+
 
     //
-    public int ReadFromBTDevice() {
-        byte c;
-        String test = new String();
 
-        try { // Read from the InputStream using polling and timeout
-            while (true) {
-                if ((c = (byte) TitlePage.mmInStream.read()) == -1) {
-                    try
-                    {
-                        TitlePage.fos.close();
-                    }
-                    catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    break;
-                }
-                //output to the file
-                try
-                {
-                    test = test + (char)c;
-                    Log.i("MY_MESSAGE", test);
-                    TitlePage.fos.write(c);
-                }
-                catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        } catch (IOException e) {
-            return -1;
-        }
-        return 0;
-    }
 
 
 

@@ -66,6 +66,9 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
 
     private File outFile = null;
 
+    private boolean found = false;
+    private boolean paired = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -94,6 +97,8 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
             //function
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         }
+
+
 
         //create AdventureLogger directory in external storage
         File dir = new File(MainActivity.path);
@@ -134,10 +139,11 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
                     //this way we will only connect to the DE2
                     if (theDevice.contains("00:06:66:6C:A9:B1")) {
                         Log.i("MY_MESSAGE", "Found the DE2");
+                        found = true;
                         pairDevice = newDevice;
                     }
 
-                    //Toast.makeText(context, theDevice, Toast.LENGTH_LONG).show();	// create popup for device
+                    Toast.makeText(context, theDevice, Toast.LENGTH_LONG).show();	// create popup for device
                 }
                 // more visual feedback for user (not essential but useful)
                 else if (action.equals(BluetoothAdapter.ACTION_DISCOVERY_STARTED)) {
@@ -146,8 +152,12 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
                 else if (action.equals(BluetoothAdapter.ACTION_DISCOVERY_FINISHED) ) {
                     Toast.makeText(context, "Discovery Finished", Toast.LENGTH_LONG).show();
                 }
+
+
             }
         };
+
+
 
         //create 3 separate IntentFilters that are tuned to listen to certain Android notifications
         //1) when new Bluetooth devices are discovered,
@@ -168,33 +178,105 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
 
     }
 
-    public void bluetoothStart() {
-        //Snackbar.make(view, "Connecting to Adventure Tracker...", Snackbar.LENGTH_LONG)
-        //.setAction("Action", null).show();
+    public void bluetoothStart(View view) {
 
         if (mBluetoothAdapter.isDiscovering())
             mBluetoothAdapter.cancelDiscovery();
 
-        mBluetoothAdapter.startDiscovery() ;
+        mBluetoothAdapter.startDiscovery();
+
+
+    }
+
+    public void bluetoothPair(View view) {
+        if (found == false) {
+            Snackbar.make(view, "Please wait for Adventure Tracker to be discovered.", Snackbar.LENGTH_LONG)
+                    .show();
+            return;
+        }
 
         // we are going to connect to the other device as a client
         // if we are already connected to a device, close connections
         if(Connected == true)
-            closeConnection();	// user defined fn to close streams (Page23)
+          closeConnection();	// user defined fn to close streams (Page23)
 
         CreateSerialBluetoothDeviceSocket( pairDevice ) ;
         ConnectToSerialBlueToothDevice();	// user defined fn
+    }
+
+    public void syncFiles(View view) {
+        if (paired == false) {
+            Snackbar.make(view, "Please wait for Adventure Tracker to be connected.", Snackbar.LENGTH_LONG)
+                    .show();
+            return;
+        }
+
+        //initiate sync by sending
+        String s = new String("sync");
+        WriteToBTDevice(s);
 
         //write logfile
-        //ReadFromBTDevice();
-        //Log.i("BLUETOOTH", testStr);
-        Intent intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
+        ReadFromBTDevice();
+        Log.i("BLUETOOTH", testStr);
     }
 
     public void nfcPage() {
         Intent intent = new Intent(this, NFCActivity.class);
         startActivity(intent);
+    }
+
+    public void pastPage() {
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+    }
+
+
+    //
+    // This function write a line of text (in the form of an array of bytes)
+    // to the Bluetooth device and then sends the string “\r\n”
+    // (required by the bluetooth dongle)
+    //
+    public void WriteToBTDevice (String message) {
+        byte[] msgBuffer = message.getBytes();
+        try {
+            //just send "s" - that's all the DE2 is looking for
+            mmOutStream.write(msgBuffer, 0, 1);
+        }
+        catch (IOException e) { }
+        Log.i("ADV_FILE", "Sent!");
+    }
+
+    public int ReadFromBTDevice() {
+        byte c;
+        String test = new String();
+
+        try { // Read from the InputStream using polling and timeout
+            while (true) {
+                if ((c = (byte) TitlePage.mmInStream.read()) == -1) {
+                    try
+                    {
+                        TitlePage.fos.close();
+                    }
+                    catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                }
+                //output to the file
+                try
+                {
+                    test = test + (char)c;
+                    Log.i("MY_MESSAGE", test);
+                    TitlePage.fos.write(c);
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        } catch (IOException e) {
+            return -1;
+        }
+        return 0;
     }
 
     public void CreateSerialBluetoothDeviceSocket(BluetoothDevice device)
@@ -210,7 +292,7 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
             mmSocket = device.createRfcommSocketToServiceRecord (MY_UUID);
         }
         catch (IOException e) {
-            Toast.makeText(context, "Socket Creation Failed", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Socket Creation Failed", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -221,10 +303,10 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
         try {
             //attempt connection to the device through the socket.
             mmSocket.connect();
-            Toast.makeText(context, "Connection Made", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Connection Made", Toast.LENGTH_LONG).show();
         }
         catch (IOException connectException) {
-            Toast.makeText(context, "Connection Failed", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Connection Failed", Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -291,7 +373,7 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
         float x1 = event1.getX();
         float x2 = event2.getX();
         if (x2 > x1) {
-            bluetoothStart();
+            pastPage();
         }
         else if (x2 < x1) {
             nfcPage();
