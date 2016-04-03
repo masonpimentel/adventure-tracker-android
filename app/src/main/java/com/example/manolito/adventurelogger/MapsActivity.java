@@ -53,13 +53,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         try {
             fis = new FileInputStream(file);
+            isr = new InputStreamReader(fis);
+            br = new BufferedReader(isr);
         }
         catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-
-        isr = new InputStreamReader(fis);
-        br = new BufferedReader(isr);
+        catch (NullPointerException e) {
+            e.printStackTrace();
+        }
 
     }
 

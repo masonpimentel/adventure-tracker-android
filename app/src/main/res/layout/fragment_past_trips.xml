@@ -3,14 +3,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingLeft="20dp"
-    android:paddingRight="20dp"
-    android:paddingTop="50dp"
-    android:paddingBottom="10dp">
+    android:paddingLeft="0dp"
+    android:paddingRight="0dp"
+    android:paddingTop="0dp"
+    android:paddingBottom="0dp">
 
     <ListView
         android:id="@+id/listview_pastTrips"
         android:layout_width="match_parent"
-        android:layout_height="422dp"
+        android:layout_height="match_parent"
         android:background="#0918FFFF" />
 </FrameLayout>
