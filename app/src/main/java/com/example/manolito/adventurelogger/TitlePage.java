@@ -116,23 +116,6 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
             e.printStackTrace();
         }
 
-        //create 3 separate IntentFilters that are tuned to listen to certain Android notifications
-        //1) when new Bluetooth devices are discovered,
-        //2) when discovery of devices starts (not essential but give useful feedback)
-        //3) When discovery ends (not essential but give useful feedback)
-        IntentFilter filterFound = new IntentFilter (BluetoothDevice.ACTION_FOUND);
-        IntentFilter filterStart = new IntentFilter (BluetoothAdapter.ACTION_DISCOVERY_STARTED);
-        IntentFilter filterStop = new IntentFilter (BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-
-        //register our broadcast receiver using the filters defined above
-        //broadcast receiver will have it’s “onReceive()” function called
-        //so it gets called every time a notification is broacast by Android that matches one of the
-        //3 filters, e.g.
-        //a new bluetooth device is found or discovery starts or finishes
-        registerReceiver (mReceiver, filterFound);
-        registerReceiver (mReceiver, filterStart);
-        registerReceiver(mReceiver, filterStop);
-
         mReceiver = new BroadcastReceiver() {
             public void onReceive (Context context, Intent intent) {
                 String action = intent.getAction();
@@ -165,24 +148,42 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
                 }
             }
         };
+
+        //create 3 separate IntentFilters that are tuned to listen to certain Android notifications
+        //1) when new Bluetooth devices are discovered,
+        //2) when discovery of devices starts (not essential but give useful feedback)
+        //3) When discovery ends (not essential but give useful feedback)
+        IntentFilter filterFound = new IntentFilter (BluetoothDevice.ACTION_FOUND);
+        IntentFilter filterStart = new IntentFilter (BluetoothAdapter.ACTION_DISCOVERY_STARTED);
+        IntentFilter filterStop = new IntentFilter (BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+
+        //register our broadcast receiver using the filters defined above
+        //broadcast receiver will have it’s “onReceive()” function called
+        //so it gets called every time a notification is broacast by Android that matches one of the
+        //3 filters, e.g.
+        //a new bluetooth device is found or discovery starts or finishes
+        registerReceiver (mReceiver, filterFound);
+        registerReceiver (mReceiver, filterStart);
+        registerReceiver(mReceiver, filterStop);
+
     }
 
     public void bluetoothStart() {
         //Snackbar.make(view, "Connecting to Adventure Tracker...", Snackbar.LENGTH_LONG)
-                //.setAction("Action", null).show();
+        //.setAction("Action", null).show();
 
         if (mBluetoothAdapter.isDiscovering())
             mBluetoothAdapter.cancelDiscovery();
 
-        //mBluetoothAdapter.startDiscovery() ;
+        mBluetoothAdapter.startDiscovery() ;
 
         // we are going to connect to the other device as a client
         // if we are already connected to a device, close connections
-        //if(Connected == true)
-            //closeConnection();	// user defined fn to close streams (Page23)
+        if(Connected == true)
+            closeConnection();	// user defined fn to close streams (Page23)
 
-        //CreateSerialBluetoothDeviceSocket( pairDevice ) ;
-        //ConnectToSerialBlueToothDevice();	// user defined fn
+        CreateSerialBluetoothDeviceSocket( pairDevice ) ;
+        ConnectToSerialBlueToothDevice();	// user defined fn
 
         //write logfile
         //ReadFromBTDevice();
