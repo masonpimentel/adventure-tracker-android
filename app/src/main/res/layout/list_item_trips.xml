@@ -20,6 +20,7 @@
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
         android:layout_marginRight="10dp"
-        android:text="Edit" />
+        android:text="Edit"
+        android:onClick="sendCoordinates"/>
 
 </RelativeLayout>

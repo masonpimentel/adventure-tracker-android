@@ -11,6 +11,6 @@
     <ListView
         android:id="@+id/listview_pastTrips"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="422dp"
         android:background="#0918FFFF" />
 </FrameLayout>
