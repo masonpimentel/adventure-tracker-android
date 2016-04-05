@@ -41,6 +41,7 @@ public class NFCActivity extends AppCompatActivity {
     TextView textView;
     public static String compile = new String("Total distance: ");
     public static String compare = new String("You travelled this much more: ");
+    public static String compare2 = new String();
     public int distance = 500;
     public int altitude = 25;
     public int time = 200;
@@ -135,8 +136,10 @@ public class NFCActivity extends AppCompatActivity {
             filename = file.getName();
             if (filename.contains("total-")) {
                 String[] parts = filename.split("-");
-                String[] parts2 = parts[1].split(".");
-                tempnum = Integer.parseInt(parts2[0]);
+                String[] parts2 = parts[1].split("\\.");
+                String filenameStr = parts2[0];
+                //can't use parseInt on a single char...
+                tempnum = Integer.parseInt(filenameStr);
                 if (tempnum > maxnum) {
                     maxnum = tempnum;
                 }
@@ -165,6 +168,7 @@ public class NFCActivity extends AppCompatActivity {
         }
         //there were multiple total files
         else {
+            compare2 = new String(MainActivity.pathDownload + "/total-" + maxnum + ".txt");
             File totalFile = new File((MainActivity.pathDownload + "/total-" + maxnum + ".txt"));
 
             //distance = br.readLine;
@@ -201,7 +205,7 @@ public class NFCActivity extends AppCompatActivity {
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             //use the Builder class for convenient dialog construction
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setMessage(NFCActivity.compare)
+            builder.setMessage(NFCActivity.compare + NFCActivity.compare2)
                     .setPositiveButton(R.string.okay, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                         }
