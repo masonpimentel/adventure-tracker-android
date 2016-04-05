@@ -13,25 +13,62 @@
     tools:showIn="@layout/activity_title_page">
 
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="350dp"
+        android:layout_height="75dp"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="@string/Welcome"
         android:id="@+id/textView"
+        android:layout_marginTop="65dp"
+        android:background="#124c1b"
+        android:textColor="#ffffff"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="98dp" />
+        android:gravity="center_vertical|center_horizontal" />
+
+    <Button
+        android:layout_width="225dp"
+        android:layout_height="wrap_content"
+        android:text="Start Discovering"
+        android:id="@+id/button2"
+        android:onClick="bluetoothStart"
+        android:layout_marginTop="175dp"
+        android:layout_below="@+id/textView"
+        android:layout_alignLeft="@+id/button4"
+        android:layout_alignStart="@+id/button4"
+        android:background="#124c1b"
+        android:textColor="#ffffff" />
+
+    <Button
+        android:layout_width="225dp"
+        android:layout_height="wrap_content"
+        android:text="Pair to Adventure Logger"
+        android:id="@+id/button4"
+        android:onClick="bluetoothPair"
+        android:layout_below="@+id/button2"
+        android:layout_centerHorizontal="true"
+        android:background="#124c1b"
+        android:textColor="#ffffff"
+        android:layout_marginTop="10dp" />
+
+    <Button
+        android:layout_width="225dp"
+        android:layout_height="wrap_content"
+        android:text="Sync Files"
+        android:id="@+id/button5"
+        android:onClick="syncFiles"
+        android:layout_below="@+id/button4"
+        android:layout_centerHorizontal="true"
+        android:background="#124c1b"
+        android:textColor="#ffffff"
+        android:layout_marginTop="10dp" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="@string/Swipe"
-        android:id="@+id/textView2"
+        android:id="@+id/pairStatus"
         android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginLeft="60dp"
-        android:gravity="center_horizontal" />
+        android:layout_centerHorizontal="true" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -39,41 +76,19 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="@string/SwipeL"
         android:id="@+id/textView3"
-        android:gravity="center_horizontal"
-        android:layout_below="@+id/textView2"
+        android:layout_below="@+id/textView4"
+        android:layout_alignRight="@+id/button2"
+        android:layout_alignEnd="@+id/button2" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/Swipe"
+        android:id="@+id/textView4"
+        android:layout_below="@+id/textView"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="10dp" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Start Discovering"
-        android:id="@+id/button2"
-        android:layout_marginTop="55dp"
-        android:onClick="bluetoothStart"
-        android:layout_below="@+id/textView3"
-        android:layout_alignRight="@+id/textView"
-        android:layout_alignEnd="@+id/textView" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Pair to Adventure Logger"
-        android:id="@+id/button4"
-        android:onClick="bluetoothPair"
-        android:layout_below="@+id/button2"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Sync Files"
-        android:id="@+id/button5"
-        android:layout_alignTop="@+id/button4"
-        android:layout_toLeftOf="@+id/button4"
-        android:layout_toStartOf="@+id/button4"
-        android:onClick="syncFiles"/>
+        android:layout_marginTop="51dp" />
 
 
 </RelativeLayout>

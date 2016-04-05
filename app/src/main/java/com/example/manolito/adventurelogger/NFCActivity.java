@@ -18,8 +18,11 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.transition.Slide;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
+import android.view.Window;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -34,16 +37,20 @@ public class NFCActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        overridePendingTransition(R.anim.slide_in_left,R.anim.slide_out_left);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_nfc);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
 
         // Get a support ActionBar corresponding to this toolbar
         ActionBar ab = getSupportActionBar();
 
         // Enable the Up button
         ab.setDisplayHomeAsUpEnabled(true);
+
+
 
         PackageManager pm = this.getPackageManager();
         if(!pm.hasSystemFeature(PackageManager.FEATURE_NFC)) {

@@ -7,16 +7,21 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.transition.Slide;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
@@ -66,17 +71,50 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
 
     private File outFile = null;
 
+    private boolean attempting = false;
     private boolean found = false;
     private boolean paired = false;
+
+    public TextView pairStatus;
+
+    /* SAVING
+    static final String STATE_FOUND = "found";
+    static final String STATE_PAIRED = "paired";
+    */
+    static final String STATE_ATTEMPTING = "attempting";
 
     private int numFiles = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        overridePendingTransition(android.R.anim.fade_in,android.R.anim.fade_out);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_title_page);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        if (savedInstanceState != null) {
+            /* SAVING
+            found = savedInstanceState.getBoolean(STATE_FOUND);
+            paired = savedInstanceState.getBoolean(STATE_PAIRED);
+            */
+            attempting = savedInstanceState.getBoolean(STATE_ATTEMPTING);
+        }
+
+
+
+        pairStatus = (TextView) findViewById(R.id.pairStatus);
+
+        if (paired == false) {
+            pairStatus.setText("Not paired");
+            pairStatus.setTextColor(Color.RED);
+        }
+
+        if (attempting == true) {
+            pairStatus.setText("Pairing...");
+            pairStatus.setTextColor(Color.BLUE);
+        }
+
         // Instantiate the gesture detector with the
         // application context and an implementation of
         // GestureDetector.OnGestureListener
@@ -101,7 +139,6 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
         }
 
 
-
         //create AdventureLogger directory in external storage
         File dir = new File(MainActivity.path);
         Log.i("ADV_FILE", ("AdventureLogger path is " + MainActivity.path));
@@ -113,7 +150,6 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
         }
 
         //find out how many logs there are
-
         File directory = new File(MainActivity.path);
 
         File[] files = directory.listFiles();
@@ -177,8 +213,6 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
             }
         };
 
-
-
         //create 3 separate IntentFilters that are tuned to listen to certain Android notifications
         //1) when new Bluetooth devices are discovered,
         //2) when discovery of devices starts (not essential but give useful feedback)
@@ -195,17 +229,29 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
         registerReceiver (mReceiver, filterFound);
         registerReceiver (mReceiver, filterStart);
         registerReceiver(mReceiver, filterStop);
-
     }
 
-    public void bluetoothStart(View view) {
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        /* SAVING
+        //save flags
+        savedInstanceState.putBoolean(STATE_FOUND, found);
+        savedInstanceState.putBoolean(STATE_PAIRED, paired);
+        */
+        savedInstanceState.putBoolean(STATE_ATTEMPTING, attempting);
 
+        super.onSaveInstanceState(savedInstanceState);
+    }
+
+
+    public void bluetoothStart(View view) {
+        attempting = true;
+        pairStatus.setText("Pairing...");
+        pairStatus.setTextColor(Color.BLUE);
         if (mBluetoothAdapter.isDiscovering())
             mBluetoothAdapter.cancelDiscovery();
 
         mBluetoothAdapter.startDiscovery();
-
-
     }
 
     public void bluetoothPair(View view) {
