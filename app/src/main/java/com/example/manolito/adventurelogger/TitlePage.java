@@ -191,8 +191,7 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
 
                     Log.i("MY_MESSAGE", theDevice);
 
-                    //hackery for now - just make sure some info from the DE2 is here
-                    //this way we will only connect to the DE2
+                    //hardcoded to connect to just to our DE2 dongle
                     if (theDevice.contains("00:06:66:6C:A9:B1")) {
                         Toast.makeText(context, "Found Adventure Tracker!", Toast.LENGTH_LONG).show();
                         found = true;
@@ -208,7 +207,6 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
                 //else if (action.equals(BluetoothAdapter.ACTION_DISCOVERY_FINISHED) ) {
                     //Toast.makeText(context, "Discovery Finished", Toast.LENGTH_LONG).show();
                 //}
-
 
             }
         };
@@ -457,6 +455,23 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
     }
 
     @Override
+    public boolean onFling(MotionEvent event1, MotionEvent event2,
+                           float velocityX, float velocityY) {
+        Log.i(DEBUG_TAG, "onFling: " + event1.toString() + event2.toString());
+        float x1 = event1.getX();
+        float x2 = event2.getX();
+        if (x2 > x1) {
+            pastPage();
+        }
+        else if (x2 < x1) {
+            nfcPage();
+        }
+        return true;
+    }
+
+    //ignore the rest - they're just required to be included by the gesture detector
+
+    @Override
     public boolean onTouchEvent(MotionEvent event){
         this.mDetector.onTouchEvent(event);
         // Be sure to call the superclass implementation
@@ -466,21 +481,6 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
     @Override
     public boolean onDown(MotionEvent event) {
         //Log.d(DEBUG_TAG,"onDown: " + event.toString());
-        return true;
-    }
-
-    @Override
-    public boolean onFling(MotionEvent event1, MotionEvent event2,
-                           float velocityX, float velocityY) {
-        Log.i(DEBUG_TAG, "onFling: " + event1.toString()+event2.toString());
-        float x1 = event1.getX();
-        float x2 = event2.getX();
-        if (x2 > x1) {
-            pastPage();
-        }
-        else if (x2 < x1) {
-            nfcPage();
-        }
         return true;
     }
 

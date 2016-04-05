@@ -30,7 +30,10 @@ import android.view.Window;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import junit.framework.Assert;
+
 import java.io.File;
+import java.io.IOException;
 
 public class NFCActivity extends AppCompatActivity {
 
@@ -38,6 +41,9 @@ public class NFCActivity extends AppCompatActivity {
     TextView textView;
     public static String compile = new String("Total distance: ");
     public static String compare = new String("You travelled this much more: ");
+    public int distance = 500;
+    public int altitude = 25;
+    public int time = 200;
 
     public static final String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/AdventureLogger";
 
@@ -79,9 +85,14 @@ public class NFCActivity extends AppCompatActivity {
     }
 
     public void sendFile(View v) {
+        //compile total
+
+        //iterate through AdventureLogger directory
+
+        //put total into total.txt
+
+
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
-
-
 
         if(!mNfcAdapter.isEnabled()) {
             Toast.makeText(this, "Please enable NFC",
@@ -108,6 +119,64 @@ public class NFCActivity extends AppCompatActivity {
     }
 
     public void compareStats(View v) {
+        //read totals in downloads folder
+        File directory = new File(MainActivity.pathDownload);
+        int tempnum = 0;
+        int maxnum = 0;
+        boolean totalfile = false;
+        String filename = new String();
+        String b_distance = new String();
+        String b_altitude = new String();
+        String b_time = new String();
+        String b_pois = new String();
+
+        File[] files = directory.listFiles();
+        for (File file : files) {
+            filename = file.getName();
+            if (filename.contains("total-")) {
+                String[] parts = filename.split("-");
+                String[] parts2 = parts[1].split(".");
+                tempnum = Integer.parseInt(parts2[0]);
+                if (tempnum > maxnum) {
+                    maxnum = tempnum;
+                }
+            }
+            else if (filename.contains("total")) {
+                totalfile = true;
+            }
+        }
+
+        //there was no total file
+        if (totalfile == false) {
+            Toast.makeText(this, "Please Beam a file from your friend first",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        //there was only one totals file
+        if (maxnum == 0) {
+            File totalFile = new File((MainActivity.pathDownload + "/total.txt"));
+
+            //distance = br.readLine;
+            //altitude = br.readLine;
+            //time = br.readLine;
+            //pois = br.readLine;
+
+        }
+        //there were multiple total files
+        else {
+            File totalFile = new File((MainActivity.pathDownload + "/total-" + maxnum + ".txt"));
+
+            //distance = br.readLine;
+            //altitude = br.readLine;
+            //time = br.readLine;
+            //pois = br.readLine;
+        }
+
+        //compile total again
+
+        //compare
+
         CompareDialogFragment compareDialog = new CompareDialogFragment();
         compareDialog.show(getFragmentManager(), "compare");
     }
@@ -142,7 +211,211 @@ public class NFCActivity extends AppCompatActivity {
         }
     }
 
+    /*
+    //read all the longitudes
+    public double[] ReadLongs(int entries, File file) {
+        int character;
+        double[] array = new double[entries];
+        int k = 0;
+        String longitude = new String();
 
+        try {
+            //reset the seek position
+            br.reset();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        //fill array with the latitudes
+        try {
+            while ((character = br.read()) >= 0) {
+                if (character == 'L') {
+                    character = br.read();
+                    if (character == 'o') {
+                        character = br.read();
+                        if (character == 'n') {
+                            //skip 8 characters
+                            br.skip(8);
+                            longitude = longitude + (char)br.read();
+                            //keep reading until the next space
+                            for(int i=0; character != 32; i++) {
+                                character = br.read();
+                                if (character == 32) {
+                                    break;
+                                }
+                                longitude = longitude + (char)character;
+                                //avoid getting stuck in an infinite loop
+                                Assert.assertTrue(i < 40);
+                            }
+                            array[k] = Double.parseDouble(longitude);
+                            k++;
+                            longitude = "";
+                        }
+                    }
+                }
+            }
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return array;
+    }
+
+    //read all the latitudes
+    public double[] ReadLats(int entries, File file) {
+        int character;
+        double[] array = new double[entries];
+        int k = 0;
+        String latitude = new String();
+
+        try {
+            //reset the seek position
+            br.reset();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        //fill array with the latitudes
+        try {
+            while ((character = br.read()) >= 0) {
+                if (character == 'L') {
+                    character = br.read();
+                    if (character == 'a') {
+                        character = br.read();
+                        if (character == 't') {
+                            //skip 7 characters
+                            br.skip(7);
+                            latitude = latitude + (char)br.read();
+                            //keep reading until the next space
+                            for(int i=0; character != 32; i++) {
+                                character = br.read();
+                                if (character == 32) {
+                                    break;
+                                }
+                                latitude = latitude + (char)character;
+                                //avoid getting stuck in an infinite loop
+                                Assert.assertTrue(i<40);
+                            }
+                            array[k] = Double.parseDouble(latitude);
+                            k++;
+                            latitude = "";
+                        }
+                    }
+                }
+            }
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return array;
+    }
+
+    //read all the times
+    public double[] ReadLats(int entries, File file) {
+        int character;
+        double[] array = new double[entries];
+        int k = 0;
+        String latitude = new String();
+
+        try {
+            //reset the seek position
+            br.reset();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        //fill array with the latitudes
+        try {
+            while ((character = br.read()) >= 0) {
+                if (character == 'L') {
+                    character = br.read();
+                    if (character == 'a') {
+                        character = br.read();
+                        if (character == 't') {
+                            //skip 7 characters
+                            br.skip(7);
+                            latitude = latitude + (char)br.read();
+                            //keep reading until the next space
+                            for(int i=0; character != 32; i++) {
+                                character = br.read();
+                                if (character == 32) {
+                                    break;
+                                }
+                                latitude = latitude + (char)character;
+                                //avoid getting stuck in an infinite loop
+                                Assert.assertTrue(i<40);
+                            }
+                            array[k] = Double.parseDouble(latitude);
+                            k++;
+                            latitude = "";
+                        }
+                    }
+                }
+            }
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return array;
+    }
+
+    //read all the altitudes
+    public double[] ReadLats(int entries, File file) {
+        int character;
+        double[] array = new double[entries];
+        int k = 0;
+        String latitude = new String();
+
+        try {
+            //reset the seek position
+            br.reset();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        //fill array with the latitudes
+        try {
+            while ((character = br.read()) >= 0) {
+                if (character == 'L') {
+                    character = br.read();
+                    if (character == 'a') {
+                        character = br.read();
+                        if (character == 't') {
+                            //skip 7 characters
+                            br.skip(7);
+                            latitude = latitude + (char)br.read();
+                            //keep reading until the next space
+                            for(int i=0; character != 32; i++) {
+                                character = br.read();
+                                if (character == 32) {
+                                    break;
+                                }
+                                latitude = latitude + (char)character;
+                                //avoid getting stuck in an infinite loop
+                                Assert.assertTrue(i<40);
+                            }
+                            array[k] = Double.parseDouble(latitude);
+                            k++;
+                            latitude = "";
+                        }
+                    }
+                }
+            }
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return array;
+    }
+    */
 
 }
 

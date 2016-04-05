@@ -36,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
     private Context context;
 
     public static final String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/AdventureLogger";
+    public static final String pathDownload = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Download";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
