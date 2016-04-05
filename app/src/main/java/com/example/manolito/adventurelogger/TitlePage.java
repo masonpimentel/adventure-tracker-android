@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -149,33 +150,7 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
             Log.i("ADV_FILE", "AdventureLogger path created");
         }
 
-        //find out how many logs there are
-        File directory = new File(MainActivity.path);
 
-        File[] files = directory.listFiles();
-        for (File file : files) {
-            if (!file.getName().contains("total")) {
-                numFiles++;
-            }
-        }
-
-        //new logfile
-        String logfile = new String("/log");
-        logfile = logfile + numFiles;
-        logfile = logfile + ".txt";
-
-        Log.i("ADV_FILE", logfile);
-
-        //set outFile to the new file
-        outFile = new File(MainActivity.path + logfile);
-
-        try
-        {
-            fos = new FileOutputStream(outFile);
-        }
-        catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
 
         mReceiver = new BroadcastReceiver() {
             public void onReceive (Context context, Intent intent) {
@@ -195,6 +170,8 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
                     if (theDevice.contains("00:06:66:6C:A9:B1")) {
                         Toast.makeText(context, "Found Adventure Tracker!", Toast.LENGTH_LONG).show();
                         found = true;
+                        pairStatus.setText("Found Adventure Tracker");
+                        pairStatus.setTextColor(Color.BLUE);
                         pairDevice = newDevice;
                     }
 
@@ -281,9 +258,30 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
         String s = new String("sync");
         WriteToBTDevice(s);
 
+        //wait for confirmation from DE2 - otherwise just return
+        byte c = 0;
+        int i = 0;
+        while (c != 114 && i<1000) {
+            //TODO: a way to timeout
+            try {
+                c = (byte) TitlePage.mmInStream.read();
+            }
+            catch (IOException e) {}
+            i++;
+        }
+        if (c != 114) {
+            Toast.makeText(this, "No communication from DE2", Toast.LENGTH_LONG);
+            return;
+        }
+
         //write logfile
-        ReadFromBTDevice();
-        //Log.i("ADV_FILE", testStr);
+        int result = 0;
+        result = ReadFromBTDevice(view);
+        if (result != 0) {
+            Snackbar.make(view, "Error syncing files", Snackbar.LENGTH_LONG)
+                    .show();
+            return;
+        }
     }
 
     public void nfcPage() {
@@ -312,9 +310,38 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
         Log.i("ADV_FILE", "Sent!");
     }
 
-    public int ReadFromBTDevice() {
+    public int ReadFromBTDevice(View view) {
         byte c;
         String test = new String();
+
+        //find out how many logs there are
+        File directory = new File(MainActivity.path);
+
+        File[] files = directory.listFiles();
+        for (File file : files) {
+            if (!file.getName().contains("total")) {
+                numFiles++;
+            }
+        }
+
+        //new logfile
+        String logfile = new String("/log");
+        logfile = logfile + numFiles;
+        logfile = logfile + ".txt";
+
+        Log.i("ADV_FILE", logfile);
+
+        //set outFile to the new file
+        outFile = new File(MainActivity.path + logfile);
+
+        //set the output stream to the new file
+        try
+        {
+            fos = new FileOutputStream(outFile);
+        }
+        catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
 
         try { // Read from the InputStream using polling and timeout
 
@@ -323,6 +350,8 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
                 c = (byte) TitlePage.mmInStream.read();
                 if (c == 64) {
                     Log.i("ADV_FILE", "Found the @!");
+                    Snackbar.make(view, "Files successfully synced!", Snackbar.LENGTH_LONG)
+                            .show();
                     try
                     {
                         fos.close();
@@ -339,7 +368,7 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
                     numFiles++;
 
                     //new logfile
-                    String logfile = new String("/log");
+                    logfile = new String("/log");
                     logfile = logfile + numFiles;
                     logfile = logfile + ".txt";
 
@@ -400,6 +429,8 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
             //attempt connection to the device through the socket.
             mmSocket.connect();
             Toast.makeText(this, "Connection Made", Toast.LENGTH_LONG).show();
+            pairStatus.setText("Paired to Adventure Tracker");
+            pairStatus.setTextColor(Color.parseColor("#229133"));
             paired = true;
         }
         catch (IOException connectException) {
@@ -468,6 +499,48 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
         }
         return true;
     }
+
+    /*
+    class WaitForConfirmation extends AsyncTask<String, Integer, Integer> {
+        @Override
+        protected void onProgressUpdate(Integer... status_array) {
+            if (status_array[0] == 1) {
+                Toast toast = Toast.makeText(TitlePage.this, "BlueTooth Failed to Start ", Toast.LENGTH_LONG);
+            }
+        }
+
+        // This is the "guts" of the asynchronus task. The code
+        // in doInBackground will be executed in a separate thread
+        @Override
+        protected Integer doInBackground(String... url_array) {
+            //wait for confirmation from DE2 - otherwise just return
+            //won't do this on another thread because it shouldn't take that long...
+            byte c = 0;
+            int i = 0;
+            while (c != 114 && i<1000) {
+                try {
+                    c = (byte) TitlePage.mmInStream.read();
+                }
+                catch (IOException e) {}
+                i++;
+            }
+            if (c != 114) {
+
+                return;
+            }
+
+            //write logfile
+            int result = 0;
+            result = ReadFromBTDevice(view);
+            if (result != 0) {
+                Snackbar.make(view, "Error syncing files", Snackbar.LENGTH_LONG)
+                        .show();
+                return;
+            }
+        }
+
+
+    }*/
 
     //ignore the rest - they're just required to be included by the gesture detector
 
