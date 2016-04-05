@@ -1,5 +1,9 @@
 package com.example.manolito.adventurelogger;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -32,6 +36,8 @@ public class NFCActivity extends AppCompatActivity {
 
     NfcAdapter mNfcAdapter;
     TextView textView;
+    public static String compile = new String("Total distance: ");
+    public static String compare = new String("You travelled this much more: ");
 
     public static final String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/AdventureLogger";
 
@@ -43,14 +49,11 @@ public class NFCActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-
         // Get a support ActionBar corresponding to this toolbar
         ActionBar ab = getSupportActionBar();
 
         // Enable the Up button
         ab.setDisplayHomeAsUpEnabled(true);
-
-
 
         PackageManager pm = this.getPackageManager();
         if(!pm.hasSystemFeature(PackageManager.FEATURE_NFC)) {
@@ -78,6 +81,8 @@ public class NFCActivity extends AppCompatActivity {
     public void sendFile(View v) {
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
 
+
+
         if(!mNfcAdapter.isEnabled()) {
             Toast.makeText(this, "Please enable NFC",
                     Toast.LENGTH_SHORT).show();
@@ -96,6 +101,49 @@ public class NFCActivity extends AppCompatActivity {
 
             mNfcAdapter.setBeamPushUris(new Uri[]{Uri.fromFile(fileToTransfer)}, this);
         }
+
+        CompileDialogFragment compileDialog = new CompileDialogFragment();
+        compileDialog.show(getFragmentManager(), "compile");
+
     }
 
+    public void compareStats(View v) {
+        CompareDialogFragment compareDialog = new CompareDialogFragment();
+        compareDialog.show(getFragmentManager(), "compare");
+    }
+
+    public static class CompileDialogFragment extends DialogFragment {
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            //use the Builder class for convenient dialog construction
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setMessage(NFCActivity.compile)
+                    .setPositiveButton(R.string.okay, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                        }
+                    });
+            // Create the AlertDialog object and return it
+            return builder.create();
+        }
+    }
+
+    public static class CompareDialogFragment extends DialogFragment {
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            //use the Builder class for convenient dialog construction
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setMessage(NFCActivity.compare)
+                    .setPositiveButton(R.string.okay, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                        }
+                    });
+            // Create the AlertDialog object and return it
+            return builder.create();
+        }
+    }
+
+
+
 }
+
+

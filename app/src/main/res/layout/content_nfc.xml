@@ -13,12 +13,61 @@
     tools:showIn="@layout/activity_nfc">
 
     <Button
-        android:layout_width="wrap_content"
+        style="@style/Widget.AppCompat.Button.Colored"
+        android:layout_width="225dp"
         android:layout_height="wrap_content"
-        android:text="New Button"
-        android:id="@+id/button"
+        android:text="Compile"
+        android:id="@+id/compile"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="162dp"
+        android:background="#124c1b"
+        android:textColor="#ffffff"
+        android:layout_marginTop="225dp"
         android:onClick="sendFile"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Compile your total stats - do this before Beaming"
+        android:id="@+id/textView2"
+        android:layout_alignBottom="@+id/compile"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="57dp"
+        android:layout_marginLeft="40dp" />
+
+    <Button
+        style="@style/Widget.AppCompat.Button.Colored"
+        android:layout_width="225dp"
+        android:layout_height="wrap_content"
+        android:text="Compare"
+        android:id="@+id/compare"
+        android:layout_alignParentTop="true"
+        android:background="#124c1b"
+        android:textColor="#ffffff"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="350dp"
+        android:onClick="compareStats"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Compare your stats to your friend"
+        android:id="@+id/compareIn"
+        android:layout_alignBottom="@+id/compare"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="57dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Tap your phones back to back to Beam your total trip stats to your friend!"
+        android:id="@+id/textView5"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="50dp"
+        android:layout_marginLeft="20dp" />
+
 </RelativeLayout>
