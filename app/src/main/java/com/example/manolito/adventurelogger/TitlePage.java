@@ -130,9 +130,8 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
 
         Log.i("ADV_FILE", logfile);
 
-        //temporarily put into log1.txt
-        outFile = new File(MainActivity.path + "/log1.txt");
-
+        //set outFile to the new file
+        outFile = new File(MainActivity.path + logfile);
 
         try
         {
@@ -215,7 +214,8 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
                     .show();
             return;
         }
-
+        //Snackbar.make(view, "Pairing", Snackbar.LENGTH_LONG)
+                //.show();
         // we are going to connect to the other device as a client
         // if we are already connected to a device, close connections
         if(Connected == true)
@@ -273,8 +273,12 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
         String test = new String();
 
         try { // Read from the InputStream using polling and timeout
+
             while (true) {
-                if ((c = (byte) TitlePage.mmInStream.read()) == -1) {
+                //64 = @
+                c = (byte) TitlePage.mmInStream.read();
+                if (c == 64) {
+                    Log.i("ADV_FILE", "Found the @!");
                     try
                     {
                         fos.close();
@@ -285,14 +289,37 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
                     break;
                 }
                 //output to the file
-                try
-                {
-                    test = test + (char)c;
-                    Log.i("ADV_FILE", test);
-                    fos.write(c);
+                //36 = $
+                else if (c == 36) {
+                    Log.i("ADV_FILE", "Found a $");
+                    numFiles++;
+
+                    //new logfile
+                    String logfile = new String("/log");
+                    logfile = logfile + numFiles;
+                    logfile = logfile + ".txt";
+
+                    Log.i("ADV_FILE", logfile);
+
+                    //set outFile to the new file
+                    outFile = new File(MainActivity.path + logfile);
+
+                    try
+                    {
+                        fos = new FileOutputStream(outFile);
+                    }
+                    catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    }
                 }
-                catch (IOException e) {
-                    e.printStackTrace();
+                else {
+                    try {
+                        test = test + (char)c;
+                        Log.i("ADV_FILE", test);
+                        fos.write(c);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         } catch (IOException e) {
