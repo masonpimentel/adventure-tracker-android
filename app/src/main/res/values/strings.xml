@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Adventure Logger</string>
     <string name="title_activity_maps">Map</string>
-    <string name="title_activity_main">Past Trips</string>
+    <string name="title_activity_main">Adventure Logger</string>
     <string name="Whistler">Plot Whistler</string>
     <string name="Cypress">Plot Cypress</string>
     <string name="Return">Return</string>
@@ -14,5 +14,7 @@
     <string name="Prepare">Prepare File</string>
     <string name="Read">Compare File</string>
     <string name="listButton">View Trip</string>
+    <string name="more_info">Trip Statistics</string>
+    <string name="title_activity_trip_statistics">Trip Statistics</string>
     <string name="okay">Okay</string>
 </resources>

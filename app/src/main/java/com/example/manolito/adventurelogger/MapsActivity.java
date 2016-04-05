@@ -23,6 +23,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -79,23 +80,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         longs = ReadLongs(entries, file);
 
 
-            //focus gps location
-            //TODO: fine tune the zoom
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lats[0], -longs[0]), 15));
+        //TODO: draw POI on the map
+        //focus gps location
+        //TODO: fine tune the zoom
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lats[0], -longs[0]), 15));
 
-            //add the points to the polyline
-            PolylineOptions options = new PolylineOptions().color(-1).geodesic(true);
+        //add the points to the polyline
+        PolylineOptions options = new PolylineOptions().color(-1).geodesic(true);
 
-            for (int i=0; i<entries; i++) {
-                options.add(new LatLng(lats[i],-longs[i]));
-                mMap.addPolyline(options);
-            }
+        for (int i=0; i<entries; i++) {
+            options.add(new LatLng(lats[i],-longs[i]));
+            mMap.addPolyline(options);
+        }
 
-            //start point
-            mMap.addMarker(new MarkerOptions().position(new LatLng(lats[0], -longs[0])).title("Start").icon(BitmapDescriptorFactory
-                    .defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
-            //end point
-            mMap.addMarker(new MarkerOptions().position(new LatLng(lats[entries - 1], -longs[entries - 1])).title("End"));
+        //start point
+        mMap.addMarker(new MarkerOptions().position(new LatLng(lats[0], -longs[0])).title("Start").icon(BitmapDescriptorFactory
+                .defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+        //end point
+        mMap.addMarker(new MarkerOptions().position(new LatLng(lats[entries - 1], -longs[entries - 1])).title("End"));
 
 
     }
@@ -105,6 +107,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         startActivity(intent);
     }
 
+    public void tripStatistics(View view) {
+        Intent intent = new Intent(this, TripStatistics.class);
+        startActivity(intent);
+    }
     //return the number of entries in the log
 
     public int numEntries() {
@@ -131,6 +137,55 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Log.i("ADV_FILE", ("Entries = " + entries));
         return entries;
     }
+
+/*    public ArrayList<POI> ReadPois(int entries, File file) {
+        ArrayList<POI> poiList = new ArrayList<>();
+        double latitude, longitude;
+        int character;
+
+        try {
+            //reset the seek position
+            br.reset();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        //fill array with the latitudes
+        try {
+            while ((character = br.read()) >= 0) {
+                if (character == 'p') {
+                    character = br.read();
+                    if (character == 'o') {
+                        character = br.read();
+                        if (character == 'i') {
+                            //skip 7 characters
+                            br.skip(7);
+                            latitude = latitude + (char)br.read();
+                            //keep reading until the next space
+                            for(int i=0; character != 32; i++) {
+                                character = br.read();
+                                if (character == 32) {
+                                    break;
+                                }
+                                latitude = latitude + (char)character;
+                                //avoid getting stuck in an infinite loop
+                                Assert.assertTrue(i<40);
+                            }
+                            array[k] = Double.parseDouble(latitude);
+                            k++;
+                            latitude = "";
+                        }
+                    }
+                }
+            }
+        }
+        catch(IOException e) {
+            e.printStackTrace();
+        }
+
+
+    }*/
 
     //read all the latitudes
     public double[] ReadLats(int entries, File file) {

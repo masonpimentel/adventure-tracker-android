@@ -68,13 +68,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-
-
-    //
-
-
-
-
     public void sendCoordinates(View view) {
         Intent intent = new Intent(this, MapsActivity.class);
         intent.putExtra("map",0);
