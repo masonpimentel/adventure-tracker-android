@@ -46,6 +46,11 @@ public class NFCActivity extends AppCompatActivity {
     public int altitude = 25;
     public int time = 200;
 
+    //the three states the bluetooth adapter can be in
+    private boolean attempting = false;
+    private boolean found = false;
+    private boolean paired = false;
+
     public static final String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/AdventureLogger";
 
     @Override
@@ -74,6 +79,9 @@ public class NFCActivity extends AppCompatActivity {
                     Toast.LENGTH_SHORT).show();
         }
 
+        attempting = getIntent().getBooleanExtra("attempting", false);
+        found = getIntent().getBooleanExtra("found", false);
+        paired = getIntent().getBooleanExtra("paired", false);
 
         // Check for available NFC Adapter
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);

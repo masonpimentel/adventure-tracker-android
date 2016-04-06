@@ -28,27 +28,14 @@
     <Button
         android:layout_width="225dp"
         android:layout_height="wrap_content"
-        android:text="Start Discovering"
+        android:text="Discover and Pair Adventure Tracker"
         android:id="@+id/button2"
         android:onClick="bluetoothStart"
-        android:layout_marginTop="175dp"
+        android:layout_marginTop="200dp"
         android:layout_below="@+id/textView"
-        android:layout_alignLeft="@+id/button4"
-        android:layout_alignStart="@+id/button4"
-        android:background="#124c1b"
-        android:textColor="#ffffff" />
-
-    <Button
-        android:layout_width="225dp"
-        android:layout_height="wrap_content"
-        android:text="Pair to Adventure Logger"
-        android:id="@+id/button4"
-        android:onClick="bluetoothPair"
-        android:layout_below="@+id/button2"
-        android:layout_centerHorizontal="true"
         android:background="#124c1b"
         android:textColor="#ffffff"
-        android:layout_marginTop="10dp" />
+        android:layout_centerHorizontal="true" />
 
     <Button
         android:layout_width="225dp"
@@ -56,19 +43,19 @@
         android:text="Sync Files"
         android:id="@+id/button5"
         android:onClick="syncFiles"
-        android:layout_below="@+id/button4"
         android:layout_centerHorizontal="true"
         android:background="#124c1b"
         android:textColor="#ffffff"
-        android:layout_marginTop="10dp" />
+        android:layout_marginTop="10dp"
+        android:layout_below="@+id/button2" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:id="@+id/pairStatus"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="280dp" />
 
     <TextView
         android:layout_width="wrap_content"

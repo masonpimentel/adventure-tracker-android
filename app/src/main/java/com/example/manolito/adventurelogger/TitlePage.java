@@ -45,9 +45,6 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
     //a handle to the tablet’s bluetooth adapter
     private BluetoothAdapter mBluetoothAdapter;
 
-    //get the context for the application. We use this with things like "toast" popups
-    private Context context;
-
     //handle to BroadCastReceiver object
     private BroadcastReceiver mReceiver ;
 
@@ -66,23 +63,11 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
 
     private BluetoothDevice pairDevice;
 
-    private String testStr = new String();
-
     public static FileOutputStream fos = null;
 
     private File outFile = null;
 
-    private boolean attempting = false;
-    private boolean found = false;
-    private boolean paired = false;
-
     public TextView pairStatus;
-
-    /* SAVING
-    static final String STATE_FOUND = "found";
-    static final String STATE_PAIRED = "paired";
-    */
-    static final String STATE_ATTEMPTING = "attempting";
 
     private int numFiles = 0;
 
@@ -94,27 +79,9 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        if (savedInstanceState != null) {
-            /* SAVING
-            found = savedInstanceState.getBoolean(STATE_FOUND);
-            paired = savedInstanceState.getBoolean(STATE_PAIRED);
-            */
-            attempting = savedInstanceState.getBoolean(STATE_ATTEMPTING);
-        }
-
-
-
         pairStatus = (TextView) findViewById(R.id.pairStatus);
 
-        if (paired == false) {
-            pairStatus.setText("Not paired");
-            pairStatus.setTextColor(Color.RED);
-        }
-
-        if (attempting == true) {
-            pairStatus.setText("Pairing...");
-            pairStatus.setTextColor(Color.BLUE);
-        }
+        checkStatus();
 
         // Instantiate the gesture detector with the
         // application context and an implementation of
@@ -125,7 +92,7 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
         //returns a handle to the one bluetooth device within the Android device
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBluetoothAdapter == null) {
-            Toast toast = Toast.makeText(context, "", Toast.LENGTH_LONG);
+            Toast toast = Toast.makeText(this, "", Toast.LENGTH_LONG);
             toast.show();
             finish();
         }
@@ -139,7 +106,6 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         }
 
-
         //create AdventureLogger directory in external storage
         File dir = new File(MainActivity.path);
         Log.i("ADV_FILE", ("AdventureLogger path is " + MainActivity.path));
@@ -149,8 +115,6 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
         else {
             Log.i("ADV_FILE", "AdventureLogger path created");
         }
-
-
 
         mReceiver = new BroadcastReceiver() {
             public void onReceive (Context context, Intent intent) {
@@ -167,12 +131,14 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
                     Log.i("MY_MESSAGE", theDevice);
 
                     //hardcoded to connect to just to our DE2 dongle
-                    if (theDevice.contains("00:06:66:6C:A9:B1")) {
+                    if (theDevice.contains("Adventure Tracker")) {
                         Toast.makeText(context, "Found Adventure Tracker!", Toast.LENGTH_LONG).show();
-                        found = true;
-                        pairStatus.setText("Found Adventure Tracker");
-                        pairStatus.setTextColor(Color.BLUE);
+                        updateStatus(GlobalVariables.BTStatus.PAIRING);
                         pairDevice = newDevice;
+
+                        //start pairing process
+                        View parentLayout = findViewById(android.R.id.content);
+                        bluetoothPair(parentLayout);
                     }
 
                     //Toast.makeText(context, theDevice, Toast.LENGTH_LONG).show();	// create popup for device
@@ -181,9 +147,12 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
                 else if (action.equals(BluetoothAdapter.ACTION_DISCOVERY_STARTED)) {
                     Toast.makeText(context, "Discovery Started", Toast.LENGTH_LONG).show();
                 }
-                //else if (action.equals(BluetoothAdapter.ACTION_DISCOVERY_FINISHED) ) {
+                else if (action.equals(BluetoothAdapter.ACTION_DISCOVERY_FINISHED) ) {
                     //Toast.makeText(context, "Discovery Finished", Toast.LENGTH_LONG).show();
-                //}
+                    if (GlobalVariables.status == GlobalVariables.BTStatus.NOT_PAIRED) {
+                        Toast.makeText(context, "Could not find Adventure Tracker", Toast.LENGTH_LONG).show();
+                    }
+                }
 
             }
         };
@@ -206,23 +175,51 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
         registerReceiver(mReceiver, filterStop);
     }
 
-    @Override
-    public void onSaveInstanceState(Bundle savedInstanceState) {
-        /* SAVING
-        //save flags
-        savedInstanceState.putBoolean(STATE_FOUND, found);
-        savedInstanceState.putBoolean(STATE_PAIRED, paired);
-        */
-        savedInstanceState.putBoolean(STATE_ATTEMPTING, attempting);
-
-        super.onSaveInstanceState(savedInstanceState);
+    public void updateStatus(GlobalVariables.BTStatus status) {
+        if (status == GlobalVariables.BTStatus.ATTEMPTING) {
+            GlobalVariables.status = GlobalVariables.BTStatus.ATTEMPTING;
+            pairStatus.setText("Attempting to find Adventure Tracker...");
+            pairStatus.setTextColor(Color.BLUE);
+        }
+        else if (status == GlobalVariables.BTStatus.PAIRING) {
+            GlobalVariables.status = GlobalVariables.BTStatus.PAIRING;
+            pairStatus.setText("Pairing...");
+            pairStatus.setTextColor(Color.BLUE);
+        }
+        else if (status == GlobalVariables.BTStatus.PAIRED) {
+            GlobalVariables.status = GlobalVariables.BTStatus.PAIRED;
+            pairStatus.setText("Paired to Adventure Tracker");
+            pairStatus.setTextColor(Color.parseColor("#229133"));
+        }
+        else {
+            //not paired
+            GlobalVariables.status = GlobalVariables.BTStatus.NOT_PAIRED;
+            pairStatus.setText("Not paired");
+            pairStatus.setTextColor(Color.RED);
+        }
+    }
+    public void checkStatus() {
+        if (GlobalVariables.status == GlobalVariables.BTStatus.ATTEMPTING) {
+            pairStatus.setText("Attempting to find Adventure Tracker...");
+            pairStatus.setTextColor(Color.BLUE);
+        }
+        else if (GlobalVariables.status == GlobalVariables.BTStatus.PAIRING) {
+            pairStatus.setText("Pairing...");
+            pairStatus.setTextColor(Color.BLUE);
+        }
+        else if (GlobalVariables.status == GlobalVariables.BTStatus.PAIRED) {
+            pairStatus.setText("Paired to Adventure Tracker");
+            pairStatus.setTextColor(Color.parseColor("#229133"));
+        }
+        else {
+            //not paired
+            pairStatus.setText("Not paired");
+            pairStatus.setTextColor(Color.RED);
+        }
     }
 
-
     public void bluetoothStart(View view) {
-        attempting = true;
-        pairStatus.setText("Pairing...");
-        pairStatus.setTextColor(Color.BLUE);
+        updateStatus(GlobalVariables.BTStatus.ATTEMPTING);
         if (mBluetoothAdapter.isDiscovering())
             mBluetoothAdapter.cancelDiscovery();
 
@@ -230,13 +227,12 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
     }
 
     public void bluetoothPair(View view) {
-        if (found == false) {
-            Snackbar.make(view, "Please wait for Adventure Tracker to be discovered.", Snackbar.LENGTH_LONG)
+        if (GlobalVariables.status == GlobalVariables.BTStatus.ATTEMPTING || GlobalVariables.status == GlobalVariables.BTStatus.NOT_PAIRED) {
+            Snackbar.make(view, "There was a problem discovering Adventure Tracker", Snackbar.LENGTH_LONG)
                     .show();
             return;
         }
-        //Snackbar.make(view, "Pairing", Snackbar.LENGTH_LONG)
-                //.show();
+
         // we are going to connect to the other device as a client
         // if we are already connected to a device, close connections
         if(Connected == true)
@@ -244,11 +240,81 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
 
         CreateSerialBluetoothDeviceSocket(pairDevice) ;
         ConnectToSerialBlueToothDevice();	// user defined fn
+    }
 
+    public void CreateSerialBluetoothDeviceSocket(BluetoothDevice device)
+    {
+        mmSocket = null;
+
+        //universal UUID for a serial profile RFCOMM blue tooth device
+        UUID MY_UUID = UUID.fromString ("00001101-0000-1000-8000-00805F9B34FB");
+
+        //get a Bluetooth Socket to connect with the given BluetoothDevice
+        try {
+            //MY_UUID is the app's UUID string, also used by the server code
+            mmSocket = device.createRfcommSocketToServiceRecord (MY_UUID);
+        }
+        catch (IOException e) {
+            Toast.makeText(this, "Socket Creation Failed", Toast.LENGTH_LONG).show();
+        }
+        catch (NullPointerException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void ConnectToSerialBlueToothDevice() {
+        //cancel discovery because it will slow down the connection
+        mBluetoothAdapter.cancelDiscovery();
+
+        try {
+            //attempt connection to the device through the socket.
+            mmSocket.connect();
+            Toast.makeText(this, "Connection Made", Toast.LENGTH_LONG).show();
+            updateStatus(GlobalVariables.BTStatus.PAIRED);
+        }
+        catch (IOException connectException) {
+            Toast.makeText(this, "Connection Failed", Toast.LENGTH_LONG).show();
+            return;
+        }
+        catch (NullPointerException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        //create the input/output stream and record fact we have made a connection
+        GetInputOutputStreamsForSocket();
+        Connected = true ;
+    }
+
+    //gets the input/output stream associated with the current socket
+    public void GetInputOutputStreamsForSocket() {
+        try {
+            mmInStream = mmSocket.getInputStream();
+            mmOutStream = mmSocket.getOutputStream();
+        } catch (IOException e) { }
+    }
+
+    void closeConnection() {
+        try {
+            mmInStream.close();
+            mmInStream = null;
+        } catch (IOException e) {}
+
+        try {
+            mmOutStream.close();
+            mmOutStream = null;
+        } catch (IOException e) {}
+
+        try {
+            mmSocket.close();
+            mmSocket = null;
+        } catch (IOException e) {}
+
+        Connected = false ;
     }
 
     public void syncFiles(View view) {
-        if (paired == false) {
+        if (GlobalVariables.status != GlobalVariables.BTStatus.PAIRED) {
             Snackbar.make(view, "Please wait for Adventure Tracker to be connected.", Snackbar.LENGTH_LONG)
                     .show();
             return;
@@ -293,7 +359,6 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
     }
-
 
     //
     // This function write a line of text (in the form of an array of bytes)
@@ -401,83 +466,10 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
         return 0;
     }
 
-    public void CreateSerialBluetoothDeviceSocket(BluetoothDevice device)
-    {
-        mmSocket = null;
-
-        //universal UUID for a serial profile RFCOMM blue tooth device
-        UUID MY_UUID = UUID.fromString ("00001101-0000-1000-8000-00805F9B34FB");
-
-        //get a Bluetooth Socket to connect with the given BluetoothDevice
-        try {
-            //MY_UUID is the app's UUID string, also used by the server code
-            mmSocket = device.createRfcommSocketToServiceRecord (MY_UUID);
-        }
-        catch (IOException e) {
-            Toast.makeText(this, "Socket Creation Failed", Toast.LENGTH_LONG).show();
-        }
-        catch (NullPointerException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void ConnectToSerialBlueToothDevice() {
-        //cancel discovery because it will slow down the connection
-        mBluetoothAdapter.cancelDiscovery();
-
-        try {
-            //attempt connection to the device through the socket.
-            mmSocket.connect();
-            Toast.makeText(this, "Connection Made", Toast.LENGTH_LONG).show();
-            pairStatus.setText("Paired to Adventure Tracker");
-            pairStatus.setTextColor(Color.parseColor("#229133"));
-            paired = true;
-        }
-        catch (IOException connectException) {
-            Toast.makeText(this, "Connection Failed", Toast.LENGTH_LONG).show();
-            return;
-        }
-        catch (NullPointerException e) {
-            e.printStackTrace();
-            return;
-        }
-
-        //create the input/output stream and record fact we have made a connection
-        GetInputOutputStreamsForSocket();
-        Connected = true ;
-    }
-
-    //gets the input/output stream associated with the current socket
-    public void GetInputOutputStreamsForSocket() {
-        try {
-            mmInStream = mmSocket.getInputStream();
-            mmOutStream = mmSocket.getOutputStream();
-        } catch (IOException e) { }
-    }
-
-    void closeConnection() {
-        try {
-            mmInStream.close();
-            mmInStream = null;
-        } catch (IOException e) {}
-
-        try {
-            mmOutStream.close();
-            mmOutStream = null;
-        } catch (IOException e) {}
-
-        try {
-            mmSocket.close();
-            mmSocket = null;
-        } catch (IOException e) {}
-
-        Connected = false ;
-    }
-
     protected void onActivityResult (int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_ENABLE_BT) {
             if (resultCode != RESULT_OK) {
-                Toast toast = Toast.makeText(context, "BlueTooth Failed to Start ", Toast.LENGTH_LONG);
+                Toast toast = Toast.makeText(this, "BlueTooth Failed to Start ", Toast.LENGTH_LONG);
                 toast.show();
                 finish();
                 return;
