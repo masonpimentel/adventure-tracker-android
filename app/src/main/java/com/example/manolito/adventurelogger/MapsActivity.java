@@ -34,6 +34,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private InputStreamReader isr = null;
     private BufferedReader br;
     private File file = null;
+    private double[] lats;
+    private double[] longs;
+    private String[] times;
 
 
     @Override
@@ -73,8 +76,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         int entries = numEntries();
-        double[] lats = new double[entries];
-        double[] longs = new double[entries];
+        lats = new double[entries];
+        longs = new double[entries];
+        times = new String[entries];
         ArrayList<POI> poiList = new ArrayList<>();
         double poiLat;
         double poiLon;
@@ -82,6 +86,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         lats = ReadLats(entries, file);
         longs = ReadLongs(entries, file);
         poiList = ReadPois(entries, file);
+        times = ReadTimes(entries, file);
 
 
         //TODO: draw POI on the map
@@ -119,7 +124,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     public void tripStatistics(View view) {
+        double totalDistance = getTotalDistance();
+        String totalTime = getTotalTime();
         Intent intent = new Intent(this, TripStatistics.class);
+        intent.putExtra("distance",totalDistance);
+        intent.putExtra("time",totalTime);
+
         startActivity(intent);
     }
     //return the number of entries in the log
@@ -269,6 +279,95 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return retLon;
     }
 
+    public double getTotalDistance() {
+        double totalDistance = 0;
+        for(int i=0; i<lats.length-1; i++) {
+            double startLat = lats[i];
+            double endLat = lats[i + 1];
+            double startLon = longs[i];
+            double endLon = longs[i + 1];
+            double dist = getDistance(startLat, startLon, endLat, endLon, "K");
+            totalDistance = totalDistance + dist;
+        }
+        return totalDistance;
+    }
+
+    public String getTotalTime() {
+        int hours=0;
+        int minutes=0;
+        int seconds=0;
+
+        String startTime = times[0];
+        String endTime = times[times.length-1];
+        int totalStartSeconds = getTotalSeconds(startTime);
+        int totalEndSeconds = getTotalSeconds(endTime);
+        int result = totalEndSeconds - totalStartSeconds;
+
+        if(result<0){
+            result = result + 12*3600;
+        }
+
+        if(result>3600){
+            hours = result/3600;
+            result = result-(3600*hours);
+        }
+
+        if(result>60){
+            minutes = result/60;
+            result = result-(60*minutes);
+        }
+
+        seconds = result;
+
+        return Integer.toString(hours) + ":" + Integer.toString(minutes) + ":" + Integer.toString(seconds);
+
+    }
+
+    public int getTotalSeconds(String time) {
+        String times[] = time.split(":");
+        String hours = times[0];
+        String minutes = times[1];
+        String seconds = times[2];
+
+        return 3600*Integer.parseInt(hours)+60*Integer.parseInt(minutes)+Integer.parseInt(seconds);
+    }
+
+    public double getDistance(double startLat, double startLon, double endLat, double endLon, String unit) {
+
+        double dist, theta;
+        if((startLat == endLat) && (startLon == endLon)) {
+            return 0.0;
+        }
+
+        theta = startLon - endLon;
+
+        dist = Math.sin(deg2rad(startLat)) * Math.sin(deg2rad(endLat)) + Math.cos(deg2rad(startLat))*Math.cos(deg2rad(endLat))*Math.cos(deg2rad(theta));
+        dist = Math.acos(dist);
+        dist = rad2deg(dist);
+        dist = dist*60*1.1515;
+
+        switch(unit) {
+            case "M":
+                break;
+            case "k":
+                dist = dist*1.609344;
+                break;
+            case "N":
+                dist = dist*0.8684;
+                break;
+            }
+
+        return dist;
+    }
+
+    public double deg2rad(double deg){
+        return deg*Math.PI/180;
+    }
+
+    public double rad2deg(double rad){
+        return rad*180/Math.PI;
+    }
+
     //read all the latitudes
     public double[] ReadLats(int entries, File file) {
         int character;
@@ -359,6 +458,58 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             array[k] = Double.parseDouble(longitude);
                             k++;
                             longitude = "";
+                        }
+                    }
+                }
+            }
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return array;
+    }
+
+    public String[] ReadTimes(int entries, File file) {
+        int character;
+        String[] array = new String[entries];
+        int k = 0;
+        String time = new String();
+
+        try {
+            //reset the seek position
+            br.reset();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        //fill array with the latitudes
+        try {
+            while ((character = br.read()) >= 0) {
+                if (character == 'T') {
+                    character = br.read();
+                    if (character == 'i') {
+                        character = br.read();
+                        if (character == 'm') {
+                            if(character == 'e') {
+                                //skip 8 characters
+                                br.skip(2);
+                                time = time + (char) br.read();
+                                //keep reading until the next space
+                                for (int i = 0; character != 32; i++) {
+                                    character = br.read();
+                                    if (character == 32) {
+                                        break;
+                                    }
+                                    time = time + (char) character;
+                                    //avoid getting stuck in an infinite loop
+                                    Assert.assertTrue(i < 40);
+                                }
+                                array[k] = time;
+                                k++;
+                                time = "";
+                            }
                         }
                     }
                 }
