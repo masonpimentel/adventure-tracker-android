@@ -47,10 +47,10 @@ public class NFCActivity extends AppCompatActivity {
     public static String compile = new String("Total distance: ");
     public static String compare = new String("Your distance: ");
     public static String compare2 = new String();
-    public int distance = 0;
-    public int altitude = 0;
-    public int time = 0;
-    public int pois = 0;
+    public double distance = 0;
+    public double altitude = 0;
+    public double time = 0;
+    public double pois = 0;
     public double your_distance = 0;
     public double your_altitude = 0;
     public double your_time = 0;
@@ -109,6 +109,10 @@ public class NFCActivity extends AppCompatActivity {
             return;
         }
 
+        //compile data right away
+        View parentLayout = findViewById(android.R.id.content);
+        sendFile(parentLayout);
+
     }
 
     public int numEntries() {
@@ -148,6 +152,9 @@ public class NFCActivity extends AppCompatActivity {
         double pois = 0;
         int entries;
         int i;
+        double diffSeconds;
+        double firstSeconds;
+        double secondSeconds;
         String distance_s = new String();
         String altitude_s = new String();
         String time_s = new String();
@@ -168,7 +175,7 @@ public class NFCActivity extends AppCompatActivity {
             } catch (NullPointerException e) {
                 e.printStackTrace();
             }
-            entries = numEntries();
+            entries = numEntries()-1;
             lats = new double[entries];
             longs = new double[entries];
             a_times = new double[entries];
@@ -179,22 +186,34 @@ public class NFCActivity extends AppCompatActivity {
             a_times = N_ReadTimes(entries, file);
             a_altitudes = N_Read_Altitudes(entries, file);
             a_pois = N_Read_POIS(entries,file);
+            //convert to decimal form
+            for (i=0; i<entries; i++) {
+                lats[i] = decimalConvert(lats[i]);
+                longs[i] = decimalConvert(longs[i]);
+            }
             for (i = 0; i < entries - 1; i++) {
                 distance = distance + Distance.distance(lats[i], longs[i], lats[i + 1], longs[i + 1], "K");
-                your_distance = distance;
             }
+            your_distance = distance;
             for (i = 0; i < entries - 1; i++) {
-                time = time + a_times[i];
-                your_time = time;
+                firstSeconds = a_times[i];
+                secondSeconds = a_times[i+1];
+                diffSeconds = secondSeconds - firstSeconds;
+                //check for roll-over
+                if (diffSeconds < 0) {
+                    diffSeconds += (12*3600);
+                }
+                time = time + diffSeconds;
             }
-            for (i = 0; i < entries - 1; i++) {
-                altitude = altitude + a_altitudes[i];
-                your_altitude = altitude;
+            your_time = time;
+            for (i = 0; i < entries-1; i++) {
+                altitude = altitude + Math.abs(a_altitudes[i+1] - a_altitudes[i]);
             }
-            for (i = 0; i < entries - 1; i++) {
+            your_altitude = altitude;
+            for (i = 0; i < entries; i++) {
                 pois = pois + a_pois[i];
-                your_pois = pois;
             }
+            your_pois = pois;
         }
 
         //put total into total.txt
@@ -213,6 +232,7 @@ public class NFCActivity extends AppCompatActivity {
                 fos.write(output[i]);
             }
             fos.write(13);
+            fos.write(10);
             output_s = Double.toString(time);
             output = output_s.getBytes();
             length = output_s.length();
@@ -220,6 +240,7 @@ public class NFCActivity extends AppCompatActivity {
                 fos.write(output[i]);
             }
             fos.write(13);
+            fos.write(10);
             output_s = Double.toString(altitude);
             output = output_s.getBytes();
             length = output_s.length();
@@ -227,6 +248,7 @@ public class NFCActivity extends AppCompatActivity {
                 fos.write(output[i]);
             }
             fos.write(13);
+            fos.write(10);
             output_s = Double.toString(pois);
             output = output_s.getBytes();
             length = output_s.length();
@@ -265,8 +287,8 @@ public class NFCActivity extends AppCompatActivity {
             mNfcAdapter.setBeamPushUris(new Uri[]{Uri.fromFile(fileToTransfer)}, this);
         }
 
-        compile = compile + " " + Double.toString(distance) + "\nTotal change in altitude: " + Double.toString(altitude) + "\nTotal time: "
-            + Double.toString(time) + "\nTotal POIs:" + Double.toString(pois);
+        compile = "Your total stats:\n\n" + "Total distance: " + String.format("%.4f", distance) + "KM\nTotal change in altitude: " + String.format("%.2f", altitude) + "M\nTotal time: "
+            + secondsToTime(time) + "\nTotal POIs:" + String.format("%.0f", altitude);
         CompileDialogFragment compileDialog = new CompileDialogFragment();
         compileDialog.show(getFragmentManager(), "compile");
     }
@@ -312,10 +334,21 @@ public class NFCActivity extends AppCompatActivity {
         if (maxnum == 0) {
             File totalFile = new File((MainActivity.pathDownload + "/total.txt"));
             try {
-                distance = Integer.parseInt(br.readLine());
-                time = Integer.parseInt(br.readLine());
-                altitude = Integer.parseInt(br.readLine());
-                pois = Integer.parseInt(br.readLine());
+                fis = new FileInputStream(totalFile);
+                isr = new InputStreamReader(fis);
+                br = new BufferedReader(isr);
+            }
+            catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            catch (NullPointerException e) {
+                e.printStackTrace();
+            }
+            try {
+                distance = Double.parseDouble(br.readLine());
+                time = Double.parseDouble(br.readLine());
+                altitude = Double.parseDouble(br.readLine());
+                pois = Double.parseDouble(br.readLine());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -326,10 +359,21 @@ public class NFCActivity extends AppCompatActivity {
             compare2 = new String(MainActivity.pathDownload + "/total-" + maxnum + ".txt");
             File totalFile = new File((MainActivity.pathDownload + "/total-" + maxnum + ".txt"));
             try {
-                distance = Integer.parseInt(br.readLine());
-                time = Integer.parseInt(br.readLine());
-                altitude = Integer.parseInt(br.readLine());
-                pois = Integer.parseInt(br.readLine());
+                fis = new FileInputStream(totalFile);
+                isr = new InputStreamReader(fis);
+                br = new BufferedReader(isr);
+            }
+            catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            catch (NullPointerException e) {
+                e.printStackTrace();
+            }
+            try {
+                distance = Double.parseDouble(br.readLine());
+                time = Double.parseDouble(br.readLine());
+                altitude = Double.parseDouble(br.readLine());
+                pois = Double.parseDouble(br.readLine());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -337,31 +381,43 @@ public class NFCActivity extends AppCompatActivity {
 
         //compare
         if (your_distance > distance) {
-            c_distance = "You travelled " + (your_distance - distance) + " KM further.";
+            c_distance = "You travelled " + String.format("%.4f", (your_distance - distance)) + " KM further.";
+        }
+        else if (your_distance < distance) {
+            c_distance = "Your friend travelled " + String.format("%.4f", (distance-your_distance)) + " KM further.";
         }
         else {
-            c_distance = "Your friend travelled " + (distance - your_distance) + " KM further.";
+            c_distance = "You travelled the same distance!";
         }
         if (your_time > time) {
             c_time = "You travelled " + secondsToTime((int)(your_time - time)) + " longer.";
         }
-        else {
+        else if (your_time < time){
             c_time = "Your friend travelled " + secondsToTime((int)(time - your_time)) + " longer.";
         }
+        else {
+            c_time = "You travelled the same amount of time!";
+        }
         if (your_altitude > altitude) {
-            c_altitude = "You travelled " + (your_altitude-altitude) + " higher.";
+            c_altitude = "You changed " + String.format("%.2f", (your_altitude - altitude)) + " M more in altitude.";
+        }
+        else if (your_altitude < altitude) {
+            c_altitude = "Your friend changed " + String.format("%.2f", (altitude - your_altitude)) + " M more in altitude.";
         }
         else {
-            c_altitude = "Your friend travelled " + (altitude - your_altitude) + " higher.";
+            c_altitude = "You both changed the same amount in altitude!";
         }
         if (your_pois > pois) {
-            c_pois = "You made " + (your_pois - pois) + " more POIs.";
+            c_pois = "You made " + String.format("%.0f", (your_pois - pois)) + " more POIs.";
+        }
+        else if (your_pois < pois) {
+            c_pois = "Your friend made " + String.format("%.0f", (pois - your_pois)) + " more POIs.";
         }
         else {
-            c_pois = "Your friend made " + (pois - your_pois) + " more POIs.";
+            c_pois = "You both made the same number of POIs!";
         }
 
-        compile = c_distance + "\n" + c_time + "\n" + c_altitude + "\n" + c_pois;
+        compare = c_distance + "\n" + c_time + "\n" + c_altitude + "\n" + c_pois;
         CompareDialogFragment compareDialog = new CompareDialogFragment();
         compareDialog.show(getFragmentManager(), "compare");
     }
@@ -386,7 +442,7 @@ public class NFCActivity extends AppCompatActivity {
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             //use the Builder class for convenient dialog construction
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setMessage(NFCActivity.compare + NFCActivity.compare2)
+            builder.setMessage(NFCActivity.compare)
                     .setPositiveButton(R.string.okay, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                         }
@@ -654,11 +710,22 @@ public class NFCActivity extends AppCompatActivity {
         return array;
     }
 
-    public String secondsToTime(int seconds) {
+    public double decimalConvert(double entry) {
+        String entryS = String.format("%.4f", entry);
+        String[] split1 = entryS.split("\\.");
+        //substring 0 to len-2
+        double part1 = Double.parseDouble(split1[0].substring(0,(split1[0].length()-2)));
+        //substring of whole entry from length-7 to length
+        int lengthEntry = entryS.length();
+        double part2 = (Double.parseDouble(entryS.substring((lengthEntry-7),lengthEntry)))/60;
+        return (part1+part2);
+    }
+
+    public String secondsToTime(double seconds) {
         String time = new String();
 
-        int hours = 0;
-        int minutes = 0;
+        double hours = 0;
+        double minutes = 0;
 
         if (seconds >= 3600) {
             hours = seconds/3600;
@@ -669,7 +736,7 @@ public class NFCActivity extends AppCompatActivity {
             seconds = seconds - (minutes*60);
         }
 
-        time = String.format("%02d:%02d:%02d", hours, minutes, seconds);
+        time = String.format("%02.0f:%02.0f:%02.0f", hours, minutes, seconds);
 
         return time;
     }
