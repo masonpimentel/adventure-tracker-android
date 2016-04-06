@@ -75,9 +75,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         int entries = numEntries();
         double[] lats = new double[entries];
         double[] longs = new double[entries];
+        ArrayList<POI> poiList = new ArrayList<>();
+        double poiLat;
+        double poiLon;
 
         lats = ReadLats(entries, file);
         longs = ReadLongs(entries, file);
+        poiList = ReadPois(entries, file);
 
 
         //TODO: draw POI on the map
@@ -91,6 +95,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         for (int i=0; i<entries; i++) {
             options.add(new LatLng(lats[i],-longs[i]));
             mMap.addPolyline(options);
+        }
+
+        for (int i=0; i<poiList.size(); i++) {
+            poiLat = poiList.get(i).latitude;
+            poiLon = poiList.get(i).longitude;
+            mMap.addMarker(new MarkerOptions().position(new LatLng(poiLat, -poiLon)).title("POI").
+                    icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
         }
 
         //start point
@@ -138,7 +149,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return entries;
     }
 
-/*    public ArrayList<POI> ReadPois(int entries, File file) {
+      public ArrayList<POI> ReadPois(int entries, File file) {
         ArrayList<POI> poiList = new ArrayList<>();
         double latitude, longitude;
         int character;
@@ -154,11 +165,47 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //fill array with the latitudes
         try {
             while ((character = br.read()) >= 0) {
-                if (character == 'p') {
+                if (character == 'P') {
                     character = br.read();
-                    if (character == 'o') {
+                    if (character == 'O') {
                         character = br.read();
-                        if (character == 'i') {
+                        if (character == 'I') {
+                            br.skip(2);
+                            character = br.read();
+                            if (character == '1'){
+                                /*
+                                    after finding the current point is a Poi, it adds the next gps
+                                    coordinate to the list of Pois
+                                 */
+                                latitude = ReadNextLat(file);
+                                longitude = ReadNextLon(file);
+
+                                POI newPoi = new POI(latitude, longitude);
+                                poiList.add(newPoi);
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
+        catch(IOException e) {
+            e.printStackTrace();
+        }
+        return poiList;
+    }
+
+    public double ReadNextLat(File file) {
+        int character;
+        double retLat = 0;
+        String latitude = "";
+        try {
+            while ((character = br.read()) >= 0) {
+                if (character == 'L') {
+                    character = br.read();
+                    if (character == 'a') {
+                        character = br.read();
+                        if (character == 't') {
                             //skip 7 characters
                             br.skip(7);
                             latitude = latitude + (char)br.read();
@@ -172,20 +219,55 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 //avoid getting stuck in an infinite loop
                                 Assert.assertTrue(i<40);
                             }
-                            array[k] = Double.parseDouble(latitude);
-                            k++;
-                            latitude = "";
+                            retLat = Double.parseDouble(latitude);
+                            break;
                         }
                     }
                 }
             }
         }
-        catch(IOException e) {
+        catch (IOException e) {
             e.printStackTrace();
         }
+        return retLat;
+    }
 
-
-    }*/
+    public double ReadNextLon(File file) {
+        int character;
+        double retLon = 0;
+        String longitude = "";
+        try {
+            while ((character = br.read()) >= 0) {
+                if (character == 'L') {
+                    character = br.read();
+                    if (character == 'o') {
+                        character = br.read();
+                        if (character == 'n') {
+                            //skip 8 characters
+                            br.skip(8);
+                            longitude = longitude + (char)br.read();
+                            //keep reading until the next space
+                            for(int i=0; character != 32; i++) {
+                                character = br.read();
+                                if (character == 32) {
+                                    break;
+                                }
+                                longitude = longitude + (char)character;
+                                //avoid getting stuck in an infinite loop
+                                Assert.assertTrue(i<40);
+                            }
+                            retLon = Double.parseDouble(longitude);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        return retLon;
+    }
 
     //read all the latitudes
     public double[] ReadLats(int entries, File file) {
