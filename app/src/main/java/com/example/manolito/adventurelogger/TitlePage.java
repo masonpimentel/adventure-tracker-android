@@ -337,7 +337,7 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
         //closeConnection();
 
         //initiate sync by sending
-        String s = new String("sync");
+        String s = new String("zync");
         WriteToBTDevice(s);
 
         //wait for a bit and check if anything is available from DE2 - if none, return

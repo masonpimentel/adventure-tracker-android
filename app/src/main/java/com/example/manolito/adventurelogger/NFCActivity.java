@@ -32,24 +32,42 @@ import android.widget.Toast;
 
 import junit.framework.Assert;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 public class NFCActivity extends AppCompatActivity {
 
     NfcAdapter mNfcAdapter;
     TextView textView;
     public static String compile = new String("Total distance: ");
-    public static String compare = new String("You travelled this much more: ");
+    public static String compare = new String("Your distance: ");
     public static String compare2 = new String();
-    public int distance = 500;
-    public int altitude = 25;
-    public int time = 200;
+    public int distance = 0;
+    public int altitude = 0;
+    public int time = 0;
+    public int pois = 0;
+    public double your_distance = 0;
+    public double your_altitude = 0;
+    public double your_time = 0;
+    public double your_pois = 0;
+
+    private FileInputStream fis = null;
+    private InputStreamReader isr = null;
+    private BufferedReader br;
+
+    public static FileOutputStream fos = null;
 
     //the three states the bluetooth adapter can be in
     private boolean attempting = false;
     private boolean found = false;
     private boolean paired = false;
+
+    private static final File totalsFile = new File(MainActivity.path + "/total.txt");
 
     public static final String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/AdventureLogger";
 
@@ -93,13 +111,138 @@ public class NFCActivity extends AppCompatActivity {
 
     }
 
-    public void sendFile(View v) {
-        //compile total
+    public int numEntries() {
+        int test;
+        int entries = 0;
+        //mark requires a "limit", set that to the maximum range of an int...
+        int markLimit = 2000000000;
 
+        try {
+            //set the mark to the beginning of the file
+            br.mark(markLimit);
+            while ((test = br.read()) >= 0) {
+                if (test == 'x') {
+                    entries++;
+                }
+            }
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        entries++;
+        return entries;
+    }
+
+    public void sendFile(View v) {
         //iterate through AdventureLogger directory
+        File directory = new File(MainActivity.path);
+        double[] lats;
+        double[] longs;
+        double[] a_times;
+        double[] a_altitudes;
+        double[] a_pois;
+        double distance = 0;
+        double altitude = 0;
+        double time = 0;
+        double pois = 0;
+        int entries;
+        int i;
+        String distance_s = new String();
+        String altitude_s = new String();
+        String time_s = new String();
+        String poi_s = new String();
+        byte[] output;
+        String output_s = new String();
+        int length;
+
+        File[] files = directory.listFiles();
+        for (File file : files) {
+            //set up buffered reader
+            try {
+                fis = new FileInputStream(file);
+                isr = new InputStreamReader(fis);
+                br = new BufferedReader(isr);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (NullPointerException e) {
+                e.printStackTrace();
+            }
+            entries = numEntries();
+            lats = new double[entries];
+            longs = new double[entries];
+            a_times = new double[entries];
+            a_altitudes = new double[entries];
+            a_pois = new double[entries];
+            lats = N_ReadLats(entries, file);
+            longs = N_ReadLongs(entries, file);
+            a_times = N_ReadTimes(entries, file);
+            a_altitudes = N_Read_Altitudes(entries, file);
+            a_pois = N_Read_POIS(entries,file);
+            for (i = 0; i < entries - 1; i++) {
+                distance = distance + Distance.distance(lats[i], longs[i], lats[i + 1], longs[i + 1], "K");
+                your_distance = distance;
+            }
+            for (i = 0; i < entries - 1; i++) {
+                time = time + a_times[i];
+                your_time = time;
+            }
+            for (i = 0; i < entries - 1; i++) {
+                altitude = altitude + a_altitudes[i];
+                your_altitude = altitude;
+            }
+            for (i = 0; i < entries - 1; i++) {
+                pois = pois + a_pois[i];
+                your_pois = pois;
+            }
+        }
 
         //put total into total.txt
-
+        try
+        {
+            fos = new FileOutputStream(totalsFile);
+        }
+        catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        try {
+            output_s = Double.toString(distance);
+            output = output_s.getBytes();
+            length = output_s.length();
+            for (i=0; i<length; i++) {
+                fos.write(output[i]);
+            }
+            fos.write(13);
+            output_s = Double.toString(time);
+            output = output_s.getBytes();
+            length = output_s.length();
+            for (i=0; i<length; i++) {
+                fos.write(output[i]);
+            }
+            fos.write(13);
+            output_s = Double.toString(altitude);
+            output = output_s.getBytes();
+            length = output_s.length();
+            for (i=0; i<length; i++) {
+                fos.write(output[i]);
+            }
+            fos.write(13);
+            output_s = Double.toString(pois);
+            output = output_s.getBytes();
+            length = output_s.length();
+            for (i=0; i<length; i++) {
+                fos.write(output[i]);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try
+        {
+            fos.close();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
 
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
 
@@ -122,9 +265,10 @@ public class NFCActivity extends AppCompatActivity {
             mNfcAdapter.setBeamPushUris(new Uri[]{Uri.fromFile(fileToTransfer)}, this);
         }
 
+        compile = compile + " " + Double.toString(distance) + "\nTotal change in altitude: " + Double.toString(altitude) + "\nTotal time: "
+            + Double.toString(time) + "\nTotal POIs:" + Double.toString(pois);
         CompileDialogFragment compileDialog = new CompileDialogFragment();
         compileDialog.show(getFragmentManager(), "compile");
-
     }
 
     public void compareStats(View v) {
@@ -134,10 +278,10 @@ public class NFCActivity extends AppCompatActivity {
         int maxnum = 0;
         boolean totalfile = false;
         String filename = new String();
-        String b_distance = new String();
-        String b_altitude = new String();
-        String b_time = new String();
-        String b_pois = new String();
+        String c_distance = new String();
+        String c_altitude = new String();
+        String c_time = new String();
+        String c_pois = new String();
 
         File[] files = directory.listFiles();
         for (File file : files) {
@@ -167,28 +311,57 @@ public class NFCActivity extends AppCompatActivity {
         //there was only one totals file
         if (maxnum == 0) {
             File totalFile = new File((MainActivity.pathDownload + "/total.txt"));
-
-            //distance = br.readLine;
-            //altitude = br.readLine;
-            //time = br.readLine;
-            //pois = br.readLine;
+            try {
+                distance = Integer.parseInt(br.readLine());
+                time = Integer.parseInt(br.readLine());
+                altitude = Integer.parseInt(br.readLine());
+                pois = Integer.parseInt(br.readLine());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
         }
         //there were multiple total files
         else {
             compare2 = new String(MainActivity.pathDownload + "/total-" + maxnum + ".txt");
             File totalFile = new File((MainActivity.pathDownload + "/total-" + maxnum + ".txt"));
-
-            //distance = br.readLine;
-            //altitude = br.readLine;
-            //time = br.readLine;
-            //pois = br.readLine;
+            try {
+                distance = Integer.parseInt(br.readLine());
+                time = Integer.parseInt(br.readLine());
+                altitude = Integer.parseInt(br.readLine());
+                pois = Integer.parseInt(br.readLine());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
-        //compile total again
-
         //compare
+        if (your_distance > distance) {
+            c_distance = "You travelled " + (your_distance - distance) + " KM further.";
+        }
+        else {
+            c_distance = "Your friend travelled " + (distance - your_distance) + " KM further.";
+        }
+        if (your_time > time) {
+            c_time = "You travelled " + secondsToTime((int)(your_time - time)) + " longer.";
+        }
+        else {
+            c_time = "Your friend travelled " + secondsToTime((int)(time - your_time)) + " longer.";
+        }
+        if (your_altitude > altitude) {
+            c_altitude = "You travelled " + (your_altitude-altitude) + " higher.";
+        }
+        else {
+            c_altitude = "Your friend travelled " + (altitude - your_altitude) + " higher.";
+        }
+        if (your_pois > pois) {
+            c_pois = "You made " + (your_pois - pois) + " more POIs.";
+        }
+        else {
+            c_pois = "Your friend made " + (pois - your_pois) + " more POIs.";
+        }
 
+        compile = c_distance + "\n" + c_time + "\n" + c_altitude + "\n" + c_pois;
         CompareDialogFragment compareDialog = new CompareDialogFragment();
         compareDialog.show(getFragmentManager(), "compare");
     }
@@ -223,9 +396,8 @@ public class NFCActivity extends AppCompatActivity {
         }
     }
 
-    /*
     //read all the longitudes
-    public double[] ReadLongs(int entries, File file) {
+    public double[] N_ReadLongs(int entries, File file) {
         int character;
         double[] array = new double[entries];
         int k = 0;
@@ -239,7 +411,7 @@ public class NFCActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        //fill array with the latitudes
+        //fill array with the longitudes
         try {
             while ((character = br.read()) >= 0) {
                 if (character == 'L') {
@@ -253,7 +425,7 @@ public class NFCActivity extends AppCompatActivity {
                             //keep reading until the next space
                             for(int i=0; character != 32; i++) {
                                 character = br.read();
-                                if (character == 32) {
+                                if (character == 32 || character == 69 || character == 87) {
                                     break;
                                 }
                                 longitude = longitude + (char)character;
@@ -276,7 +448,7 @@ public class NFCActivity extends AppCompatActivity {
     }
 
     //read all the latitudes
-    public double[] ReadLats(int entries, File file) {
+    public double[] N_ReadLats(int entries, File file) {
         int character;
         double[] array = new double[entries];
         int k = 0;
@@ -304,7 +476,7 @@ public class NFCActivity extends AppCompatActivity {
                             //keep reading until the next space
                             for(int i=0; character != 32; i++) {
                                 character = br.read();
-                                if (character == 32) {
+                                if (character == 32 || character == 83 || character == 78) {
                                     break;
                                 }
                                 latitude = latitude + (char)character;
@@ -327,11 +499,17 @@ public class NFCActivity extends AppCompatActivity {
     }
 
     //read all the times
-    public double[] ReadLats(int entries, File file) {
+    public double[] N_ReadTimes(int entries, File file) {
         int character;
         double[] array = new double[entries];
         int k = 0;
-        String latitude = new String();
+        String hour = new String();
+        String minute = new String();
+        String second = new String();
+        double hoursDbl = 0;
+        double minutesDbl = 0;
+        double secondsDbl = 0;
+        double totalSeconds = 0;
 
         try {
             //reset the seek position
@@ -341,30 +519,37 @@ public class NFCActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        //fill array with the latitudes
+        //fill array with the times
         try {
             while ((character = br.read()) >= 0) {
-                if (character == 'L') {
+                if (character == 'T') {
                     character = br.read();
-                    if (character == 'a') {
+                    if (character == 'i') {
                         character = br.read();
-                        if (character == 't') {
-                            //skip 7 characters
-                            br.skip(7);
-                            latitude = latitude + (char)br.read();
+                        if (character == 'm') {
+                            //skip 3 characters
+                            br.skip(3);
+                            //get hours
+                            hour = hour + (char)br.read();
+                            hour = hour + (char)br.read();
+                            br.skip(1);
+                            //get minutes
+                            minute = minute + (char)br.read();
+                            minute = minute + (char)br.read();
+                            br.skip(1);
+                            //get seconds
+                            second = second + (char)br.read();
+                            second = second + (char)br.read();
                             //keep reading until the next space
-                            for(int i=0; character != 32; i++) {
-                                character = br.read();
-                                if (character == 32) {
-                                    break;
-                                }
-                                latitude = latitude + (char)character;
-                                //avoid getting stuck in an infinite loop
-                                Assert.assertTrue(i<40);
-                            }
-                            array[k] = Double.parseDouble(latitude);
+                            hoursDbl = 3600*(Double.parseDouble(hour));
+                            minutesDbl = 60*(Double.parseDouble(minute));
+                            secondsDbl = Double.parseDouble(second);
+                            totalSeconds = hoursDbl + minutesDbl + secondsDbl;
+                            array[k] = totalSeconds;
+                            hour = "";
+                            minute = "";
+                            second = "";
                             k++;
-                            latitude = "";
                         }
                     }
                 }
@@ -378,11 +563,11 @@ public class NFCActivity extends AppCompatActivity {
     }
 
     //read all the altitudes
-    public double[] ReadLats(int entries, File file) {
+    public double[] N_Read_Altitudes(int entries, File file) {
         int character;
         double[] array = new double[entries];
         int k = 0;
-        String latitude = new String();
+        String altitude = new String();
 
         try {
             //reset the seek position
@@ -392,30 +577,30 @@ public class NFCActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        //fill array with the latitudes
+        //fill array with the altitudes
         try {
             while ((character = br.read()) >= 0) {
-                if (character == 'L') {
+                if (character == 'A') {
                     character = br.read();
-                    if (character == 'a') {
+                    if (character == 'l') {
                         character = br.read();
                         if (character == 't') {
                             //skip 7 characters
                             br.skip(7);
-                            latitude = latitude + (char)br.read();
-                            //keep reading until the next space
+                            altitude = altitude + (char)br.read();
+                            //keep reading until the next M
                             for(int i=0; character != 32; i++) {
                                 character = br.read();
-                                if (character == 32) {
+                                if (character == 32 || character == 77) {
                                     break;
                                 }
-                                latitude = latitude + (char)character;
+                                altitude = altitude + (char)character;
                                 //avoid getting stuck in an infinite loop
                                 Assert.assertTrue(i<40);
                             }
-                            array[k] = Double.parseDouble(latitude);
+                            array[k] = Double.parseDouble(altitude);
                             k++;
-                            latitude = "";
+                            altitude = "";
                         }
                     }
                 }
@@ -427,7 +612,67 @@ public class NFCActivity extends AppCompatActivity {
 
         return array;
     }
-    */
+
+    //read all the pois
+    public double[] N_Read_POIS(int entries, File file) {
+        int character;
+        double[] array = new double[entries];
+        int k = 0;
+        String poi = new String();
+
+        try {
+            //reset the seek position
+            br.reset();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        //fill array with the pois
+        try {
+            while ((character = br.read()) >= 0) {
+                if (character == 'P') {
+                    character = br.read();
+                    if (character == 'O') {
+                        character = br.read();
+                        if (character == 'I') {
+                            //skip 1 character
+                            br.skip(1);
+                            poi = poi + (char)br.read();
+                            array[k] = Double.parseDouble(poi);
+                            k++;
+                            poi = "";
+                        }
+                    }
+                }
+            }
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return array;
+    }
+
+    public String secondsToTime(int seconds) {
+        String time = new String();
+
+        int hours = 0;
+        int minutes = 0;
+
+        if (seconds >= 3600) {
+            hours = seconds/3600;
+            seconds = seconds - (hours*3600);
+        }
+        if (seconds >= 60) {
+            minutes = seconds/60;
+            seconds = seconds - (minutes*60);
+        }
+
+        time = String.format("%02d:%02d:%02d", hours, minutes, seconds);
+
+        return time;
+    }
 
 }
 
