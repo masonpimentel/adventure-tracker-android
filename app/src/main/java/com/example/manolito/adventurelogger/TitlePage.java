@@ -22,6 +22,7 @@ import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,9 +33,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class TitlePage extends AppCompatActivity implements GestureDetector.OnGestureListener,
         GestureDetector.OnDoubleTapListener{
+
+    //this is the timeout for the bluetooth adapter
+    private static final int timeout = 100;
 
     private static final String DEBUG_TAG = "TITLE_PAGE";
     private GestureDetectorCompat mDetector;
@@ -219,6 +227,12 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
     }
 
     public void bluetoothStart(View view) {
+        if (GlobalVariables.status == GlobalVariables.BTStatus.PAIRED) {
+            Snackbar.make(view, "You're already connected!", Snackbar.LENGTH_LONG)
+                    .show();
+            return;
+        }
+
         updateStatus(GlobalVariables.BTStatus.ATTEMPTING);
         if (mBluetoothAdapter.isDiscovering())
             mBluetoothAdapter.cancelDiscovery();
@@ -314,31 +328,100 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
     }
 
     public void syncFiles(View view) {
+        int available = 0;
         if (GlobalVariables.status != GlobalVariables.BTStatus.PAIRED) {
-            Snackbar.make(view, "Please wait for Adventure Tracker to be connected.", Snackbar.LENGTH_LONG)
+            Snackbar.make(view, "Please connect to Adventure Tracker first.", Snackbar.LENGTH_LONG)
                     .show();
             return;
         }
+        //closeConnection();
 
         //initiate sync by sending
         String s = new String("sync");
         WriteToBTDevice(s);
 
-        //wait for confirmation from DE2 - otherwise just return
-        byte c = 0;
-        int i = 0;
-        while (c != 114 && i<1000) {
-            //TODO: a way to timeout
-            try {
-                c = (byte) TitlePage.mmInStream.read();
-            }
-            catch (IOException e) {}
-            i++;
+        //wait for a bit and check if anything is available from DE2 - if none, return
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
-        if (c != 114) {
-            Toast.makeText(this, "No communication from DE2", Toast.LENGTH_LONG);
+        try {
+            available = mmInStream.available();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (available == 0) {
+            Snackbar.make(view, "Adventure Tracker timed out.", Snackbar.LENGTH_LONG)
+                    .show();
             return;
         }
+        else {
+            //check for an 'a' (97)
+            try {
+                available = mmInStream.read();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (available != 114) {
+                Snackbar.make(view, "Adventure Tracker timed out.", Snackbar.LENGTH_LONG)
+                        .show();
+                return;
+            }
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            try {
+                available = mmInStream.available();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (available == 0) {
+                Snackbar.make(view, "Adventure Tracker timed out.", Snackbar.LENGTH_LONG)
+                        .show();
+                return;
+            }
+            else {
+                //check for an 's' (114)
+                //(paranoia check)
+                try {
+                    available = mmInStream.read();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                if (available != 114) {
+                    Snackbar.make(view, "Adventure Tracker timed out.", Snackbar.LENGTH_LONG)
+                            .show();
+                    return;
+                }
+            }
+        }
+
+
+/*
+        synchronized (waitConfirmation) {
+            waitConfirmation.start();
+            try {
+                waitConfirmation.wait(500);
+
+                if (waitConfirmation.isAlive()) {
+                    Snackbar.make(view, "Adventure Tracker timed out.", Snackbar.LENGTH_LONG)
+                            .show();
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    //for now, just close the app
+                    this.finishAffinity();
+                    return;
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }*/
 
         //write logfile
         int result = 0;
@@ -493,46 +576,22 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
     }
 
     /*
-    class WaitForConfirmation extends AsyncTask<String, Integer, Integer> {
-        @Override
-        protected void onProgressUpdate(Integer... status_array) {
-            if (status_array[0] == 1) {
-                Toast toast = Toast.makeText(TitlePage.this, "BlueTooth Failed to Start ", Toast.LENGTH_LONG);
-            }
-        }
-
-        // This is the "guts" of the asynchronus task. The code
-        // in doInBackground will be executed in a separate thread
-        @Override
-        protected Integer doInBackground(String... url_array) {
-            //wait for confirmation from DE2 - otherwise just return
-            //won't do this on another thread because it shouldn't take that long...
-            byte c = 0;
-            int i = 0;
-            while (c != 114 && i<1000) {
+    Thread waitConfirmation = new Thread(new Runnable() {
+        public void run() {
+            int read = 0;
+            while (true) {
                 try {
-                    c = (byte) TitlePage.mmInStream.read();
+                    read = mmInStream.read();
+                    //'r' = 114
+                    if (read == 114) {
+                        return;
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-                catch (IOException e) {}
-                i++;
-            }
-            if (c != 114) {
-
-                return;
-            }
-
-            //write logfile
-            int result = 0;
-            result = ReadFromBTDevice(view);
-            if (result != 0) {
-                Snackbar.make(view, "Error syncing files", Snackbar.LENGTH_LONG)
-                        .show();
-                return;
             }
         }
-
-
-    }*/
+    }); */
 
     //ignore the rest - they're just required to be included by the gesture detector
 
