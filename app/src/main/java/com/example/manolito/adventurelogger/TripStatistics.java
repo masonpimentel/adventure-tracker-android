@@ -20,7 +20,11 @@ public class TripStatistics extends AppCompatActivity {
 
         double distance = getIntent().getDoubleExtra("distance",0.0);
         TextView distanceView = (TextView) findViewById(R.id.distance);
-        distanceView.setText(Double.toString(distance));
+        distanceView.setText(Double.toString(distance) + " Kilometers");
+
+        double altitudeChange = getIntent().getDoubleExtra("altitude",0.0);
+        TextView altitudeView = (TextView) findViewById(R.id.altitude);
+        altitudeView.setText(Double.toString(altitudeChange)+" Kilometers");
 
         String time = getIntent().getStringExtra("time");
         TextView timeView = (TextView) findViewById(R.id.time);

@@ -9,6 +9,7 @@
     <string name="title_activity_title_page">Adventure Logger</string>
     <string name="Welcome">Welcome to Adventure Logger!</string>
     <string name="Distance">Distance Travelled</string>
+    <string name="Altitude">Altitude Changed</string>
     <string name="Time">Time Elapsed</string>
     <string name="Swipe">Swipe right to see past trips</string>
     <string name="SwipeL">Swipe left to Beam your stats</string>

@@ -72,4 +72,35 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="75dp"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="@string/Altitude"
+        android:id="@+id/altitudeLabel"
+
+        android:background="#124c1b"
+        android:textColor="#ffffff"
+
+        android:layout_below="@+id/time"
+
+        android:gravity="center_vertical|center_horizontal"
+
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+
+        android:id="@+id/altitude"
+        android:background="#ffffff"
+
+        android:textColor="#000000"
+        android:gravity="center_vertical|center_horizontal"
+        android:layout_below="@+id/altitudeLabel"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
 </RelativeLayout>

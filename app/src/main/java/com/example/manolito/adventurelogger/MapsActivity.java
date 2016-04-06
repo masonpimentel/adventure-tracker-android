@@ -36,6 +36,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private File file = null;
     private double[] lats;
     private double[] longs;
+    private double[] altitudes;
     private String[] times;
 
 
@@ -78,6 +79,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         int entries = numEntries();
         lats = new double[entries];
         longs = new double[entries];
+        altitudes = new double[entries];
         times = new String[entries];
         ArrayList<POI> poiList = new ArrayList<>();
         double poiLat;
@@ -85,6 +87,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         lats = ReadLats(entries, file);
         longs = ReadLongs(entries, file);
+        altitudes = ReadAltitudes(entries, file);
         poiList = ReadPois(entries, file);
         times = ReadTimes(entries, file);
 
@@ -125,9 +128,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     public void tripStatistics(View view) {
         double totalDistance = getTotalDistance();
+        double totalAltitudeChange = getTotalAltitudeChange();
         String totalTime = getTotalTime();
         Intent intent = new Intent(this, TripStatistics.class);
         intent.putExtra("distance",totalDistance);
+        intent.putExtra("altitude",totalAltitudeChange);
         intent.putExtra("time",totalTime);
 
         startActivity(intent);
@@ -290,6 +295,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             totalDistance = totalDistance + dist;
         }
         return totalDistance;
+    }
+
+    public double getTotalAltitudeChange() {
+        double totalAltitudeChange = 0;
+        for(int i=0; i<altitudes.length-1; i++) {
+            double startAltitude = altitudes[i];
+            double endAltitude =altitudes[i+1];
+            double altitudeChange = endAltitude - startAltitude;
+            totalAltitudeChange = totalAltitudeChange+altitudeChange;
+        }
+        return totalAltitudeChange;
     }
 
     public String getTotalTime() {
@@ -458,6 +474,57 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             array[k] = Double.parseDouble(longitude);
                             k++;
                             longitude = "";
+                        }
+                    }
+                }
+            }
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return array;
+    }
+
+    //read all the longitudes
+    public double[] ReadAltitudes(int entries, File file) {
+        int character;
+        double[] array = new double[entries];
+        int k = 0;
+        String altitude = new String();
+
+        try {
+            //reset the seek position
+            br.reset();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        //fill array with the latitudes
+        try {
+            while ((character = br.read()) >= 0) {
+                if (character == 'A') {
+                    character = br.read();
+                    if (character == 'l') {
+                        character = br.read();
+                        if (character == 't') {
+                            //skip 8 characters
+                            br.skip(7);
+                            altitude = altitude + (char)br.read();
+                            //keep reading until the next space
+                            for(int i=0; character != 32; i++) {
+                                character = br.read();
+                                if (character == 32) {
+                                    break;
+                                }
+                                altitude = altitude + (char)character;
+                                //avoid getting stuck in an infinite loop
+                                Assert.assertTrue(i<40);
+                            }
+                            array[k] = Double.parseDouble(altitude);
+                            k++;
+                            altitude = "";
                         }
                     }
                 }
