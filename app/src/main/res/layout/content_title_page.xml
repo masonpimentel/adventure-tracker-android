@@ -28,7 +28,7 @@
     <Button
         android:layout_width="225dp"
         android:layout_height="wrap_content"
-        android:text="Discover and Pair Adventure Tracker"
+        android:text="Connect"
         android:id="@+id/button2"
         android:onClick="bluetoothStart"
         android:layout_marginTop="200dp"
@@ -40,7 +40,7 @@
     <Button
         android:layout_width="225dp"
         android:layout_height="wrap_content"
-        android:text="Sync Files"
+        android:text="Sync"
         android:id="@+id/button5"
         android:onClick="syncFiles"
         android:layout_centerHorizontal="true"

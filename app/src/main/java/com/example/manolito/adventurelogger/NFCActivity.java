@@ -288,7 +288,7 @@ public class NFCActivity extends AppCompatActivity {
         }
 
         compile = "Your total stats:\n\n" + "Total distance: " + String.format("%.4f", distance) + "KM\nTotal change in altitude: " + String.format("%.2f", altitude) + "M\nTotal time: "
-            + secondsToTime(time) + "\nTotal POIs:" + String.format("%.0f", altitude);
+            + secondsToTime(time) + "\nTotal POIs:" + String.format("%.0f", pois);
         CompileDialogFragment compileDialog = new CompileDialogFragment();
         compileDialog.show(getFragmentManager(), "compile");
     }

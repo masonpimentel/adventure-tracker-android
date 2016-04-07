@@ -288,6 +288,7 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
         }
         catch (IOException connectException) {
             Toast.makeText(this, "Connection Failed", Toast.LENGTH_LONG).show();
+            updateStatus(GlobalVariables.BTStatus.NOT_PAIRED);
             return;
         }
         catch (NullPointerException e) {
@@ -329,20 +330,49 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
 
     public void syncFiles(View view) {
         int available = 0;
+        int character = 0;
         if (GlobalVariables.status != GlobalVariables.BTStatus.PAIRED) {
             Snackbar.make(view, "Please connect to Adventure Tracker first.", Snackbar.LENGTH_LONG)
                     .show();
             return;
         }
-        //closeConnection();
 
         //initiate sync by sending
-        String s = new String("zync");
+        String s = new String("sync");
         WriteToBTDevice(s);
 
         //wait for a bit and check if anything is available from DE2 - if none, return
         try {
             Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        //check for an 'r' (114)
+        try {
+            available = mmInStream.available();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (available == 0) {
+            Snackbar.make(view, "Adventure Tracker timed out.", Snackbar.LENGTH_LONG)
+                    .show();
+            return;
+        }
+        try {
+            character = mmInStream.read();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (character != 114) {
+            Snackbar.make(view, "Adventure Tracker timed out.", Snackbar.LENGTH_LONG)
+                    .show();
+            return;
+        }
+
+        //check for an 't' (116)
+        try {
+            Thread.sleep(10);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -356,72 +386,44 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
                     .show();
             return;
         }
-        else {
-            //check for an 'a' (97)
-            try {
-                available = mmInStream.read();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            if (available != 114) {
-                Snackbar.make(view, "Adventure Tracker timed out.", Snackbar.LENGTH_LONG)
-                        .show();
-                return;
-            }
-            try {
-                Thread.sleep(10);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            try {
-                available = mmInStream.available();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            if (available == 0) {
-                Snackbar.make(view, "Adventure Tracker timed out.", Snackbar.LENGTH_LONG)
-                        .show();
-                return;
-            }
-            else {
-                //check for an 's' (114)
-                //(paranoia check)
-                try {
-                    available = mmInStream.read();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                if (available != 114) {
-                    Snackbar.make(view, "Adventure Tracker timed out.", Snackbar.LENGTH_LONG)
-                            .show();
-                    return;
-                }
-            }
+
+        try {
+            character = mmInStream.read();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (character != 116) {
+            Snackbar.make(view, "Adventure Tracker timed out.", Snackbar.LENGTH_LONG)
+                    .show();
+            return;
         }
 
-
-/*
-        synchronized (waitConfirmation) {
-            waitConfirmation.start();
-            try {
-                waitConfirmation.wait(500);
-
-                if (waitConfirmation.isAlive()) {
-                    Snackbar.make(view, "Adventure Tracker timed out.", Snackbar.LENGTH_LONG)
-                            .show();
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    //for now, just close the app
-                    this.finishAffinity();
-                    return;
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }*/
+        //check for an 's' (115)
+        try {
+            Thread.sleep(10);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        try {
+            available = mmInStream.available();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (available == 0) {
+            Snackbar.make(view, "Adventure Tracker timed out.", Snackbar.LENGTH_LONG)
+                    .show();
+            return;
+        }
+        try {
+            character = mmInStream.read();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (character != 115) {
+            Snackbar.make(view, "Adventure Tracker timed out.", Snackbar.LENGTH_LONG)
+                    .show();
+            return;
+        }
 
         //write logfile
         int result = 0;
@@ -461,6 +463,8 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
     public int ReadFromBTDevice(View view) {
         byte c;
         String test = new String();
+        boolean first = true;
+        numFiles = 0;
 
         //find out how many logs there are
         File directory = new File(MainActivity.path);
@@ -479,33 +483,32 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
 
         Log.i("ADV_FILE", logfile);
 
-        //set outFile to the new file
-        outFile = new File(MainActivity.path + logfile);
 
-        //set the output stream to the new file
-        try
-        {
-            fos = new FileOutputStream(outFile);
-        }
-        catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
 
         try { // Read from the InputStream using polling and timeout
-
+            int received = 0;
             while (true) {
                 //64 = @
                 c = (byte) TitlePage.mmInStream.read();
+                Log.i("ADV_FILE", "Recieved " + (char)c);
                 if (c == 64) {
                     Log.i("ADV_FILE", "Found the @!");
-                    Snackbar.make(view, "Files successfully synced!", Snackbar.LENGTH_LONG)
-                            .show();
-                    try
-                    {
-                        fos.close();
+                    if (received == 0) {
+                        Snackbar.make(view, "Files already synced.", Snackbar.LENGTH_LONG)
+                                .show();
                     }
-                    catch (IOException e) {
-                        e.printStackTrace();
+                    else {
+                        Snackbar.make(view, "Files successfully synced!", Snackbar.LENGTH_LONG)
+                                .show();
+                    }
+                    if (first != true) {
+                        try
+                        {
+                            fos.close();
+                        }
+                        catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                     break;
                 }
@@ -534,6 +537,21 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
                     }
                 }
                 else {
+                    if (first == true) {
+                        first = false;
+                        //set outFile to the new file
+                        outFile = new File(MainActivity.path + logfile);
+
+                        //set the output stream to the new file
+                        try
+                        {
+                            fos = new FileOutputStream(outFile);
+                        }
+                        catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    received++;
                     try {
                         test = test + (char)c;
                         Log.i("ADV_FILE", test);
