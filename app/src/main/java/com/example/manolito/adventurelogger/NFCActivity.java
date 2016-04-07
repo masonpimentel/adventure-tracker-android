@@ -176,7 +176,7 @@ public class NFCActivity extends AppCompatActivity {
                 } catch (NullPointerException e) {
                     e.printStackTrace();
                 }
-                entries = numEntries() - 1;
+                entries = numEntries();
                 lats = new double[entries];
                 longs = new double[entries];
                 a_times = new double[entries];
