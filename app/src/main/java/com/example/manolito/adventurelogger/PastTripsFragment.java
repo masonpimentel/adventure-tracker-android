@@ -48,6 +48,7 @@ public class PastTripsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         File[] tripFiles = GetFiles(path);
         ArrayList<String> fileNames = getFileNames(tripFiles);
+        String fileName;
 
 
         View rootView = inflater.inflate(R.layout.fragment_past_trips, container,false);
@@ -55,7 +56,10 @@ public class PastTripsFragment extends Fragment {
         List<String> tripsItems = new ArrayList<String>();
 
         for (int i = 0; i <fileNames.size() ; i++) {
-            tripsItems.add(fileNames.get(i));
+            fileName = fileNames.get(i);
+            if(!fileName.equals( "total.txt")) {
+                tripsItems.add(fileNames.get(i));
+            }
         }
 
         pastTripsItemAdapter = new ArrayAdapter<String>(
