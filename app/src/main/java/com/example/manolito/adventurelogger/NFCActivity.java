@@ -165,55 +165,57 @@ public class NFCActivity extends AppCompatActivity {
 
         File[] files = directory.listFiles();
         for (File file : files) {
-            //set up buffered reader
-            try {
-                fis = new FileInputStream(file);
-                isr = new InputStreamReader(fis);
-                br = new BufferedReader(isr);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (NullPointerException e) {
-                e.printStackTrace();
-            }
-            entries = numEntries()-1;
-            lats = new double[entries];
-            longs = new double[entries];
-            a_times = new double[entries];
-            a_altitudes = new double[entries];
-            a_pois = new double[entries];
-            lats = N_ReadLats(entries, file);
-            longs = N_ReadLongs(entries, file);
-            a_times = N_ReadTimes(entries, file);
-            a_altitudes = N_Read_Altitudes(entries, file);
-            a_pois = N_Read_POIS(entries,file);
-            //convert to decimal form
-            for (i=0; i<entries; i++) {
-                lats[i] = decimalConvert(lats[i]);
-                longs[i] = decimalConvert(longs[i]);
-            }
-            for (i = 0; i < entries - 1; i++) {
-                distance = distance + Distance.distance(lats[i], longs[i], lats[i + 1], longs[i + 1], "K");
-            }
-            your_distance = distance;
-            for (i = 0; i < entries - 1; i++) {
-                firstSeconds = a_times[i];
-                secondSeconds = a_times[i+1];
-                diffSeconds = secondSeconds - firstSeconds;
-                //check for roll-over
-                if (diffSeconds < 0) {
-                    diffSeconds += (12*3600);
+            if (!file.getName().contains("total")) {
+                //set up buffered reader
+                try {
+                    fis = new FileInputStream(file);
+                    isr = new InputStreamReader(fis);
+                    br = new BufferedReader(isr);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (NullPointerException e) {
+                    e.printStackTrace();
                 }
-                time = time + diffSeconds;
+                entries = numEntries() - 1;
+                lats = new double[entries];
+                longs = new double[entries];
+                a_times = new double[entries];
+                a_altitudes = new double[entries];
+                a_pois = new double[entries];
+                lats = N_ReadLats(entries, file);
+                longs = N_ReadLongs(entries, file);
+                a_times = N_ReadTimes(entries, file);
+                a_altitudes = N_Read_Altitudes(entries, file);
+                a_pois = N_Read_POIS(entries, file);
+                //convert to decimal form
+                for (i = 0; i < entries; i++) {
+                    lats[i] = decimalConvert(lats[i]);
+                    longs[i] = decimalConvert(longs[i]);
+                }
+                for (i = 0; i < entries - 1; i++) {
+                    distance = distance + Distance.distance(lats[i], longs[i], lats[i + 1], longs[i + 1], "K");
+                }
+                your_distance = distance;
+                for (i = 0; i < entries - 1; i++) {
+                    firstSeconds = a_times[i];
+                    secondSeconds = a_times[i + 1];
+                    diffSeconds = secondSeconds - firstSeconds;
+                    //check for roll-over
+                    if (diffSeconds < 0) {
+                        diffSeconds += (12 * 3600);
+                    }
+                    time = time + diffSeconds;
+                }
+                your_time = time;
+                for (i = 0; i < entries - 1; i++) {
+                    altitude = altitude + Math.abs(a_altitudes[i + 1] - a_altitudes[i]);
+                }
+                your_altitude = altitude;
+                for (i = 0; i < entries; i++) {
+                    pois = pois + a_pois[i];
+                }
+                your_pois = pois;
             }
-            your_time = time;
-            for (i = 0; i < entries-1; i++) {
-                altitude = altitude + Math.abs(a_altitudes[i+1] - a_altitudes[i]);
-            }
-            your_altitude = altitude;
-            for (i = 0; i < entries; i++) {
-                pois = pois + a_pois[i];
-            }
-            your_pois = pois;
         }
 
         //put total into total.txt

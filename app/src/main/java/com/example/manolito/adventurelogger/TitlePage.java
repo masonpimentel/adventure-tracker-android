@@ -505,6 +505,8 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
                         try
                         {
                             fos.close();
+                            //'$''@' makes an extra file - delete this
+                            outFile.delete();
                         }
                         catch (IOException e) {
                             e.printStackTrace();
