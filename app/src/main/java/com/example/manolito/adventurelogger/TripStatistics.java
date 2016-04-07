@@ -24,7 +24,7 @@ public class TripStatistics extends AppCompatActivity {
 
         double altitudeChange = getIntent().getDoubleExtra("altitude",0.0);
         TextView altitudeView = (TextView) findViewById(R.id.altitude);
-        altitudeView.setText(Double.toString(altitudeChange)+" Kilometers");
+        altitudeView.setText(Double.toString(altitudeChange)+" Meters");
 
         String time = getIntent().getStringExtra("time");
         TextView timeView = (TextView) findViewById(R.id.time);

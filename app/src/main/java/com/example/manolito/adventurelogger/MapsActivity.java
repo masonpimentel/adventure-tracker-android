@@ -55,9 +55,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Log.i("ADV_FILE", ("Path = " + path));
         file = new File(path + "/" + map);
 
-        // temporarily get coordinate data from log0
-        //file = new File(path + "/log0.txt");
-
         try {
             fis = new FileInputStream(file);
             isr = new InputStreamReader(fis);
@@ -92,7 +89,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         times = ReadTimes(entries, file);
 
 
-        //TODO: draw POI on the map
         //focus gps location
         //TODO: fine tune the zoom
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lats[0], -longs[0]), 15));
@@ -159,7 +155,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             e.printStackTrace();
         }
 
-        entries++;
+        //entries++;
         Log.i("ADV_FILE", ("Entries = " + entries));
         return entries;
     }
@@ -185,7 +181,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     if (character == 'O') {
                         character = br.read();
                         if (character == 'I') {
-                            br.skip(2);
+                            br.skip(1);
                             character = br.read();
                             if (character == '1'){
                                 /*
@@ -227,14 +223,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             //keep reading until the next space
                             for(int i=0; character != 32; i++) {
                                 character = br.read();
-                                if (character == 32) {
+                                if (character == 32 || character == 83 || character == 78) {
                                     break;
                                 }
                                 latitude = latitude + (char)character;
                                 //avoid getting stuck in an infinite loop
                                 Assert.assertTrue(i<40);
                             }
-                            retLat = Double.parseDouble(latitude);
+                            retLat = decimalConvert(Double.parseDouble(latitude));
                             break;
                         }
                     }
@@ -264,14 +260,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             //keep reading until the next space
                             for(int i=0; character != 32; i++) {
                                 character = br.read();
-                                if (character == 32) {
+                                if (character == 32 || character == 69 || character == 87) {
                                     break;
                                 }
                                 longitude = longitude + (char)character;
                                 //avoid getting stuck in an infinite loop
-                                Assert.assertTrue(i<40);
+                                Assert.assertTrue(i < 40);
                             }
-                            retLon = Double.parseDouble(longitude);
+                            retLon = decimalConvert(Double.parseDouble(longitude));
                             break;
                         }
                     }
@@ -286,7 +282,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     public double getTotalDistance() {
         double totalDistance = 0;
-        for(int i=0; i<lats.length-1; i++) {
+        for(int i=0; i<lats.length-2; i++) {
             double startLat = lats[i];
             double endLat = lats[i + 1];
             double startLon = longs[i];
@@ -299,7 +295,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     public double getTotalAltitudeChange() {
         double totalAltitudeChange = 0;
-        for(int i=0; i<altitudes.length-1; i++) {
+        for(int i=0; i<altitudes.length-2; i++) {
             double startAltitude = altitudes[i];
             double endAltitude =altitudes[i+1];
             double altitudeChange = endAltitude - startAltitude;
@@ -314,7 +310,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         int seconds=0;
 
         String startTime = times[0];
-        String endTime = times[times.length-1];
+        String endTime = times[(times.length)-2];
         int totalStartSeconds = getTotalSeconds(startTime);
         int totalEndSeconds = getTotalSeconds(endTime);
         int result = totalEndSeconds - totalStartSeconds;
@@ -413,14 +409,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             //keep reading until the next space
                             for(int i=0; character != 32; i++) {
                                 character = br.read();
-                                if (character == 32) {
+                                if (character == 32 || character == 83 || character ==78) {
                                     break;
                                 }
                                 latitude = latitude + (char)character;
                                 //avoid getting stuck in an infinite loop
                                 Assert.assertTrue(i<40);
                             }
-                            array[k] = Double.parseDouble(latitude);
+                            array[k] = decimalConvert(Double.parseDouble(latitude));
                             k++;
                             latitude = "";
                         }
@@ -464,14 +460,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             //keep reading until the next space
                             for(int i=0; character != 32; i++) {
                                 character = br.read();
-                                if (character == 32) {
+                                if (character == 32 || character == 69 || character == 87) {
                                     break;
                                 }
                                 longitude = longitude + (char)character;
                                 //avoid getting stuck in an infinite loop
                                 Assert.assertTrue(i<40);
                             }
-                            array[k] = Double.parseDouble(longitude);
+                            array[k] = decimalConvert(Double.parseDouble(longitude));
                             k++;
                             longitude = "";
                         }
@@ -515,7 +511,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             //keep reading until the next space
                             for(int i=0; character != 32; i++) {
                                 character = br.read();
-                                if (character == 32) {
+                                if (character == 32 || character == 77) {
                                     break;
                                 }
                                 altitude = altitude + (char)character;
@@ -559,6 +555,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     if (character == 'i') {
                         character = br.read();
                         if (character == 'm') {
+                            character = br.read();
                             if(character == 'e') {
                                 //skip 8 characters
                                 br.skip(2);
@@ -587,5 +584,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
         return array;
+    }
+
+    public double decimalConvert(double entry) {
+        String entryS = String.format("%.4f", entry);
+        String[] split1 = entryS.split("\\.");
+        //substring 0 to len-2
+        double part1 = Double.parseDouble(split1[0].substring(0,(split1[0].length()-2)));
+        //substring of whole entry from length-7 to length
+        int lengthEntry = entryS.length();
+        double part2 = (Double.parseDouble(entryS.substring((lengthEntry-7),lengthEntry)))/60;
+        return (part1+part2);
     }
 }

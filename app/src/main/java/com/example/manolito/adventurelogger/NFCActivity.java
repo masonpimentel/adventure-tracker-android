@@ -134,7 +134,7 @@ public class NFCActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        entries++;
+        //entries++;
         return entries;
     }
 
