@@ -331,8 +331,30 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         seconds = result;
 
-        return Integer.toString(hours) + ":" + Integer.toString(minutes) + ":" + Integer.toString(seconds);
+        String time;
+        time = String.format("%02.0f:%02.0f:%02.0f", (double)hours, (double)minutes, (double)seconds);
+        return time;
 
+    }
+
+    public String secondsToTime(double seconds) {
+        String time = new String();
+
+        double hours = 0;
+        double minutes = 0;
+
+        if (seconds >= 3600) {
+            hours = seconds/3600;
+            seconds = seconds - (hours*3600);
+        }
+        if (seconds >= 60) {
+            minutes = seconds/60;
+            seconds = seconds - (minutes*60);
+        }
+
+        time = String.format("%02.0f:%02.0f:%02.0f", hours, minutes, seconds);
+
+        return time;
     }
 
     public int getTotalSeconds(String time) {
