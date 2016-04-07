@@ -55,9 +55,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Log.i("ADV_FILE", ("Path = " + path));
         file = new File(path + "/" + map);
 
-        // temporarily get coordinate data from log0
-        //file = new File(path + "/log0.txt");
-
         try {
             fis = new FileInputStream(file);
             isr = new InputStreamReader(fis);
@@ -286,7 +283,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     public double getTotalDistance() {
         double totalDistance = 0;
-        for(int i=0; i<lats.length-1; i++) {
+        for(int i=0; i<lats.length-2; i++) {
             double startLat = lats[i];
             double endLat = lats[i + 1];
             double startLon = longs[i];
@@ -299,7 +296,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     public double getTotalAltitudeChange() {
         double totalAltitudeChange = 0;
-        for(int i=0; i<altitudes.length-1; i++) {
+        for(int i=0; i<altitudes.length-2; i++) {
             double startAltitude = altitudes[i];
             double endAltitude =altitudes[i+1];
             double altitudeChange = endAltitude - startAltitude;
@@ -314,7 +311,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         int seconds=0;
 
         String startTime = times[0];
-        String endTime = times[times.length-1];
+        String endTime = times[(times.length)-2];
         int totalStartSeconds = getTotalSeconds(startTime);
         int totalEndSeconds = getTotalSeconds(endTime);
         int result = totalEndSeconds - totalStartSeconds;
@@ -515,7 +512,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             //keep reading until the next space
                             for(int i=0; character != 32; i++) {
                                 character = br.read();
-                                if (character == 32) {
+                                if (character == 32 || character == 77) {
                                     break;
                                 }
                                 altitude = altitude + (char)character;
@@ -559,6 +556,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     if (character == 'i') {
                         character = br.read();
                         if (character == 'm') {
+                            character = br.read();
                             if(character == 'e') {
                                 //skip 8 characters
                                 br.skip(2);
