@@ -7,26 +7,15 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.nfc.NdefMessage;
-import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
-import android.nfc.NfcEvent;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Parcelable;
 import android.provider.Settings;
-import android.support.design.widget.FloatingActionButton;
-import android.nfc.NfcAdapter.CreateNdefMessageCallback;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.transition.Slide;
-import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
-import android.view.Window;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -67,7 +56,7 @@ public class NFCActivity extends AppCompatActivity {
     private boolean found = false;
     private boolean paired = false;
 
-    private static final File totalsFile = new File(MainActivity.path + "/total.txt");
+    private static final File totalsFile = new File(PastTrips.path + "/total.txt");
 
     public static final String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/AdventureLogger";
 
@@ -140,7 +129,7 @@ public class NFCActivity extends AppCompatActivity {
 
     public void sendFile(View v) {
         //iterate through AdventureLogger directory
-        File directory = new File(MainActivity.path);
+        File directory = new File(PastTrips.path);
         double[] lats;
         double[] longs;
         double[] a_times;
@@ -155,10 +144,6 @@ public class NFCActivity extends AppCompatActivity {
         double diffSeconds;
         double firstSeconds;
         double secondSeconds;
-        String distance_s = new String();
-        String altitude_s = new String();
-        String time_s = new String();
-        String poi_s = new String();
         byte[] output;
         String output_s = new String();
         int length;
@@ -177,11 +162,6 @@ public class NFCActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
                 entries = numEntries();
-                lats = new double[entries];
-                longs = new double[entries];
-                a_times = new double[entries];
-                a_altitudes = new double[entries];
-                a_pois = new double[entries];
                 lats = N_ReadLats(entries, file);
                 longs = N_ReadLongs(entries, file);
                 a_times = N_ReadTimes(entries, file);
@@ -297,7 +277,7 @@ public class NFCActivity extends AppCompatActivity {
 
     public void compareStats(View v) {
         //read totals in downloads folder
-        File directory = new File(MainActivity.pathDownload);
+        File directory = new File(PastTrips.pathDownload);
         int tempnum = 0;
         int maxnum = 0;
         boolean totalfile = false;
@@ -334,7 +314,7 @@ public class NFCActivity extends AppCompatActivity {
 
         //there was only one totals file
         if (maxnum == 0) {
-            File totalFile = new File((MainActivity.pathDownload + "/total.txt"));
+            File totalFile = new File((PastTrips.pathDownload + "/total.txt"));
             try {
                 fis = new FileInputStream(totalFile);
                 isr = new InputStreamReader(fis);
@@ -358,8 +338,8 @@ public class NFCActivity extends AppCompatActivity {
         }
         //there were multiple total files
         else {
-            compare2 = new String(MainActivity.pathDownload + "/total-" + maxnum + ".txt");
-            File totalFile = new File((MainActivity.pathDownload + "/total-" + maxnum + ".txt"));
+            compare2 = new String(PastTrips.pathDownload + "/total-" + maxnum + ".txt");
+            File totalFile = new File((PastTrips.pathDownload + "/total-" + maxnum + ".txt"));
             try {
                 fis = new FileInputStream(totalFile);
                 isr = new InputStreamReader(fis);

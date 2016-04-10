@@ -43,15 +43,15 @@
             android:name=".MapsActivity"
             android:label="@string/title_activity_maps" />
         <activity
-            android:name=".MainActivity"
+            android:name=".PastTrips"
             android:label="@string/title_activity_main"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.manolito.adventurelogger.TitlePage" />
+                android:value=".MainMenu" />
         </activity>
         <activity
-            android:name=".TitlePage"
+            android:name=".MainMenu"
             android:label="@string/title_activity_title_page"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -63,11 +63,11 @@
         <activity
             android:name=".NFCActivity"
             android:label="@string/title_activity_nfc"
-            android:parentActivityName=".TitlePage"
+            android:parentActivityName=".MainMenu"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.manolito.adventurelogger.TitlePage" />
+                android:value=".MainMenu" />
 
             <intent-filter>
                 <action android:name="android.nfc.action.NDEF_DISCOVERED" />

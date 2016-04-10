@@ -30,7 +30,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.UUID;
 
-public class MainActivity extends AppCompatActivity {
+public class PastTrips extends AppCompatActivity {
 
     //get the context for the application. We use this with things like "toast" popups
     private Context context;
@@ -63,13 +63,6 @@ public class MainActivity extends AppCompatActivity {
     public void sendCoordinates(View view) {
         Intent intent = new Intent(this, MapsActivity.class);
         intent.putExtra("map",0);
-        intent.putExtra("path",path);
-        startActivity(intent);
-    }
-
-    public void sendCypress(View view) {
-        Intent intent = new Intent(this, MapsActivity.class);
-        intent.putExtra("map",1);
         intent.putExtra("path",path);
         startActivity(intent);
     }

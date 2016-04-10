@@ -8,21 +8,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.transition.Slide;
 import android.util.Log;
 import android.view.GestureDetector;
-import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.Window;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,16 +27,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
-public class TitlePage extends AppCompatActivity implements GestureDetector.OnGestureListener,
+public class MainMenu extends AppCompatActivity implements GestureDetector.OnGestureListener,
         GestureDetector.OnDoubleTapListener{
-
-    //this is the timeout for the bluetooth adapter
-    private static final int timeout = 100;
 
     private static final String DEBUG_TAG = "TITLE_PAGE";
     private GestureDetectorCompat mDetector;
@@ -115,8 +102,8 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
         }
 
         //create AdventureLogger directory in external storage
-        File dir = new File(MainActivity.path);
-        Log.i("ADV_FILE", ("AdventureLogger path is " + MainActivity.path));
+        File dir = new File(PastTrips.path);
+        Log.i("ADV_FILE", ("AdventureLogger path is " + PastTrips.path));
         if (dir.mkdirs() || dir.isDirectory()) {
             Log.i("ADV_FILE", "AdventureLogger path already exists");
         }
@@ -441,7 +428,7 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
     }
 
     public void pastPage() {
-        Intent intent = new Intent(this, MainActivity.class);
+        Intent intent = new Intent(this, PastTrips.class);
         startActivity(intent);
     }
 
@@ -467,7 +454,7 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
         numFiles = 0;
 
         //find out how many logs there are
-        File directory = new File(MainActivity.path);
+        File directory = new File(PastTrips.path);
 
         File[] files = directory.listFiles();
         for (File file : files) {
@@ -489,7 +476,7 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
             int received = 0;
             while (true) {
                 //64 = @
-                c = (byte) TitlePage.mmInStream.read();
+                c = (byte) MainMenu.mmInStream.read();
                 Log.i("ADV_FILE", "Recieved " + (char)c);
                 if (c == 64) {
                     Log.i("ADV_FILE", "Found the @!");
@@ -528,7 +515,7 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
                     Log.i("ADV_FILE", logfile);
 
                     //set outFile to the new file
-                    outFile = new File(MainActivity.path + logfile);
+                    outFile = new File(PastTrips.path + logfile);
 
                     try
                     {
@@ -542,7 +529,7 @@ public class TitlePage extends AppCompatActivity implements GestureDetector.OnGe
                     if (first == true) {
                         first = false;
                         //set outFile to the new file
-                        outFile = new File(MainActivity.path + logfile);
+                        outFile = new File(PastTrips.path + logfile);
 
                         //set the output stream to the new file
                         try
