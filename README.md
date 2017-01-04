@@ -1,5 +1,7 @@
 # AdventureTrackerAndroid
 
+Hardware device can be found here: https://github.com/snxfz947/AdventureTrackerDE2
+
 Android application to complement the Adventure Tracker hardware platform. Application is called "Adventure Logger" to distinguish it from the Adventure Tracker device.
 
 Adventure Logger pairs with the hardware device over a bluetooth connection, and allows the user to download trip data to review statistics, and share trips with other users. The Android application complements the hardware device as it allows the user to back up trip logs to remote storage and provides a familiar, clean interface, while the more rugged Adventure Tracker logs trip data in harder environments where a mobile phone may lose reception or become damaged.
